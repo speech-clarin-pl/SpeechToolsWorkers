@@ -101,6 +101,7 @@ def run():
                 update_db_error(data['id'], data['task'], 'task finished unsuccesfully')
         except RuntimeError as e:
             update_db_error(data['id'], data['task'], str(e))
+            logger.exception('run task')
         logger.info('Done')
 
     # if more than one worker:

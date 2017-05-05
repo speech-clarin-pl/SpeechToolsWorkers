@@ -52,8 +52,8 @@ def run():
         ch.basic_ack(delivery_tag=method.delivery_tag)
         try:
             normalize(data['input'], data['output'])
-        except Exception as e:
-            logger.error(e)
+        except:
+            logger.exception('normalize')
         if os.path.exists(data['output']):
             logger.info('Finished processing: ' + data['output'])
             update_db(data['id'], data['fid'], data['output'])

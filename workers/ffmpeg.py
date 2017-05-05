@@ -39,8 +39,8 @@ def run():
         try:
             with open(os.devnull, 'w') as n:
                 call(cmd, stdin=n, stdout=n, stderr=n)
-        except Exception as e:
-            logger.error(e)
+        except:
+            logger.exception('call command')
         if os.path.exists(data['output']):
             logger.info('Finished processing: ' + data['output'])
             update_db(data['id'], data['fid'], data['output'])
