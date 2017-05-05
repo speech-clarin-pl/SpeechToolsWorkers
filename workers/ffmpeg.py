@@ -1,14 +1,12 @@
-import pika
 import json
+import logging
 import os
 import os.path
-import sys
 from subprocess import call
-import logging
-import argparse
-from pymongo import MongoClient
+
+import pika
 from bson.objectid import ObjectId
-import daemonize
+from pymongo import MongoClient
 
 client = MongoClient()
 
@@ -24,7 +22,7 @@ def update_db_error(id, fid):
     client.clarin.projects.update_one({'_id': ObjectId(id)}, upd)
 
 
-def run_program():
+def run():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
 
@@ -55,31 +53,3 @@ def run_program():
 
     channel.basic_consume(callback, queue='ffmpeg')
     channel.start_consuming()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='FFMPEG worker queue')
-    parser.add_argument('--daemon', '-d', help='run as daemon', action='store_true')
-    parser.add_argument('--log', '-l', help='log to file')
-    parser.add_argument('--pidfile', '-p', help='setup a pid lockfile')
-
-    args = parser.parse_args()
-
-    if args.log:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s',
-                            filename=args.log,
-                            filemode='w')
-    else:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s')
-
-    pidfile = None
-    if args.pidfile:
-        pidfile = args.pidfile
-
-    if args.daemon:
-        d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=pidfile, action=run_program)
-        d.start()
-    else:
-        run_program()

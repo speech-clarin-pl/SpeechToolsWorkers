@@ -1,17 +1,13 @@
-import pika
-import daemon
-import daemon.pidfile
+import codecs
 import json
+import logging
 import os
 import os.path
-from subprocess import call
-import logging
-import argparse
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-import codecs
 import re
-import locale
+
+import pika
+from bson.objectid import ObjectId
+from pymongo import MongoClient
 
 client = MongoClient()
 
@@ -42,7 +38,7 @@ def update_db_error(id, fid):
     client.clarin.projects.update_one({'_id': ObjectId(id)}, upd)
 
 
-def run_program():
+def run():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
 
@@ -69,38 +65,3 @@ def run_program():
 
     channel.basic_consume(callback, queue='text_normalizer')
     channel.start_consuming()
-
-
-def daemon_run(pidfile):
-    with daemon.DaemonContext(pidfile=pidfile):
-        run_program()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Text normalization worker queue')
-    parser.add_argument('--daemon', '-d', help='run as daemon', action='store_true')
-    parser.add_argument('--log', '-l', help='log to file')
-    parser.add_argument('--pidfile', '-p', help='setup a pid lockfile')
-    parser.add_argument('--locale', default='pl_PL.utf8', help='program locale')
-
-    args = parser.parse_args()
-
-    locale.setlocale(locale.LC_ALL, args.locale)
-
-    if args.log:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s',
-                            filename=args.log,
-                            filemode='w')
-    else:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s')
-
-    pidfile = None
-    if args.pidfile:
-        pidfile = daemon.pidfile.TimeoutPIDLockFile(args.pidfile)
-
-    if args.daemon:
-        daemon_run(pidfile)
-    else:
-        run_program()

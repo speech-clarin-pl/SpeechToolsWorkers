@@ -1,15 +1,13 @@
-import pika
-import daemon
-import daemon.pidfile
 import json
-from subprocess import Popen, STDOUT
 import logging
-import argparse
-from pymongo import MongoClient
-from bson.objectid import ObjectId
-import re
 import os
 import os.path
+import re
+from subprocess import Popen, STDOUT
+
+import pika
+from bson.objectid import ObjectId
+from pymongo import MongoClient
 
 client = MongoClient()
 
@@ -17,13 +15,14 @@ pat = re.compile('[^\w\s]', flags=re.U)
 num = re.compile('[0-9]', flags=re.U)
 ws = re.compile('\s+', flags=re.U)
 
-def change_owner(path, uid, gid):
-    os.chown(path,uid,gid)
-    for root, dirs, files in os.walk(path):
-        for item in dirs:
-            os.chown(os.path.join(root, item), uid, gid)
-        for item in files:
-            os.chown(os.path.join(root, item), uid, gid)
+
+# def change_owner(path, uid, gid):
+#     os.chown(path,uid,gid)
+#     for root, dirs, files in os.walk(path):
+#         for item in dirs:
+#             os.chown(os.path.join(root, item), uid, gid)
+#         for item in files:
+#             os.chown(os.path.join(root, item), uid, gid)
 
 def check_files(dir, files):
     for file in files:
@@ -47,23 +46,19 @@ def align(type, wav_file, txt_file, output):
         return None
 
 
-def run_task(type, id, uid=None, gid=None):
+def run_task(type, id):
     project = get_files_db(id)
     if type == 'forcealign':
         wav_file = project['media']['default']['file_path']
         txt_file = project['media']['default']['trans_file_path']
         output = project['path'] + '/forcealign'
-        ret=align('ForcedAlign', wav_file, txt_file, output)
-        if uid and gid:
-            change_owner(output,uid,gid);
+        ret = align('ForcedAlign', wav_file, txt_file, output)
         return ret
     elif type == 'segmentalign':
         wav_file = project['media']['default']['file_path']
         txt_file = project['media']['default']['trans_file_path']
         output = project['path'] + '/segmentalign'
-        ret=align('SegmentAlign', wav_file, txt_file, output)
-        if uid and gid:
-            change_owner(output,uid,gid);
+        ret = align('SegmentAlign', wav_file, txt_file, output)
         return ret
     else:
         raise RuntimeError('unknown task type')
@@ -85,7 +80,7 @@ def update_db_error(id, type, desc):
     client.clarin.projects.update_one({'_id': ObjectId(id)}, upd)
 
 
-def run_program(uid=None,gid=None):
+def run():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
 
@@ -98,7 +93,7 @@ def run_program(uid=None,gid=None):
         ch.basic_ack(delivery_tag=method.delivery_tag)
         logging.info('Running {} for {} '.format(data['task'], data['id']))
         try:
-            ret = run_task(data['task'], data['id'],uid=uid,gid=gid)
+            ret = run_task(data['task'], data['id'])
             if ret and len(ret) > 0:
                 update_db(data['id'], data['task'], ret)
             else:
@@ -112,37 +107,3 @@ def run_program(uid=None,gid=None):
 
     channel.basic_consume(callback, queue='speech_tools')
     channel.start_consuming()
-
-
-def daemon_run(pidfile, uid=None, gid=None):
-    with daemon.DaemonContext(pidfile=pidfile):
-        run_program(uid=uid,gid=gid)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Speech tools worker queue')
-    parser.add_argument('--daemon', '-d', help='run as daemon', action='store_true')
-    parser.add_argument('--log', '-l', help='log to file')
-    parser.add_argument('--pidfile', '-p', help='setup a pid lockfile')
-    parser.add_argument('--uid', '-u', help='change uid of the output dir', default=33)
-    parser.add_argument('--gid', '-g', help='change gid of the output dir', default=33)
-
-    args = parser.parse_args()
-
-    if args.log:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s',
-                            filename=args.log,
-                            filemode='w')
-    else:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s')
-
-    pidfile = None
-    if args.pidfile:
-        pidfile = daemon.pidfile.TimeoutPIDLockFile(args.pidfile)
-
-    if args.daemon:
-        daemon_run(pidfile,uid=args.uid,gid=args.gid)
-    else:
-        run_program(uid=args.uid,gid=args.gid)
