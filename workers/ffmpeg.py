@@ -1,12 +1,13 @@
 import json
-from workers import logger
 import os
 import os.path
-from subprocess import call
+from subprocess import call, STDOUT
 
 import pika
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+
+from workers import logger
 
 client = MongoClient()
 
@@ -37,8 +38,8 @@ def run():
         logger.info('Running: ' + ' '.join(cmd))
         ch.basic_ack(delivery_tag=method.delivery_tag)
         try:
-            with open(os.devnull, 'w') as n:
-                call(cmd, stdin=n, stdout=n, stderr=n)
+            with open(data['output'] + '_ffmpeg.log', 'w') as f:
+                call(cmd, stdout=f, stderr=STDOUT)
         except:
             logger.exception('call command')
         if os.path.exists(data['output']):
