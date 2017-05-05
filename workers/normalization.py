@@ -1,6 +1,5 @@
 import codecs
 import json
-import logging
 import os
 import os.path
 import re
@@ -8,6 +7,8 @@ import re
 import pika
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+
+from workers import logger
 
 client = MongoClient()
 
@@ -44,7 +45,7 @@ def run():
 
     channel.queue_declare(queue='text_normalizer', durable=True)
 
-    logging.info('Text normalization queue waiting...')
+    logger.info('Text normalization queue waiting...')
 
     def callback(ch, method, properties, body):
         data = json.loads(body)
@@ -52,12 +53,12 @@ def run():
         try:
             normalize(data['input'], data['output']);
         except Exception as e:
-            logging.error(e)
+            logger.error(e)
         if os.path.exists(data['output']):
-            logging.info('Finished processing: ' + data['output'])
+            logger.info('Finished processing: ' + data['output'])
             update_db(data['id'], data['fid'], data['output'])
         else:
-            logging.info('Error processing: ' + data['output'])
+            logger.info('Error processing: ' + data['output'])
             update_db_error(data['id'], data['fid'])
 
     # if more than one worker:

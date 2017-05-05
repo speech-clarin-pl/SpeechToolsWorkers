@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger('worker')
+
 import ffmpeg
 import normalization
 import speech

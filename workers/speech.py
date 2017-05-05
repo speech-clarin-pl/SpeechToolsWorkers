@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import os.path
 import re
@@ -8,6 +7,8 @@ from subprocess import Popen, STDOUT
 import pika
 from bson.objectid import ObjectId
 from pymongo import MongoClient
+
+from workers import logger
 
 client = MongoClient()
 
@@ -34,7 +35,7 @@ def check_files(dir, files):
 def align(type, wav_file, txt_file, output):
     cmd = ['bash', './speech_tools/{}/run.sh'.format(type), wav_file, txt_file, output]
     with open(output + '.log', 'w') as log:
-        logging.info('Running {}'.format(' '.join(cmd)))
+        logger.info('Running {}'.format(' '.join(cmd)))
         proc = Popen(cmd, stdout=log, stderr=STDOUT)
         ret = proc.wait()
     if ret != 0:
@@ -86,12 +87,12 @@ def run():
 
     channel.queue_declare(queue='speech_tools', durable=True)
 
-    logging.info('Speech tools queue waiting...')
+    logger.info('Speech tools queue waiting...')
 
     def callback(ch, method, properties, body):
         data = json.loads(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
-        logging.info('Running {} for {} '.format(data['task'], data['id']))
+        logger.info('Running {} for {} '.format(data['task'], data['id']))
         try:
             ret = run_task(data['task'], data['id'])
             if ret and len(ret) > 0:
@@ -100,7 +101,7 @@ def run():
                 update_db_error(data['id'], data['task'], 'task finished unsuccesfully')
         except RuntimeError as e:
             update_db_error(data['id'], data['task'], str(e))
-        logging.info('Done')
+        logger.info('Done')
 
     # if more than one worker:
     # channel.basic_qos(prefetch_count=1)

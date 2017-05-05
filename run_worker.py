@@ -16,27 +16,31 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.log:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s',
-                            filename=args.log,
-                            filemode='a')
-    else:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s [%(levelname)s] %(message)s')
-
-    pidfile = None
-    if args.pidfile:
-        pidfile = args.pidfile
-
     if not args.worker in workers.workers:
         print 'Worker {} not found!'.format(args.worker)
         exit(1)
 
     action = workers.workers[args.worker]
 
+    workers.logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+
+    keep_fds = None
+    if args.log:
+        handler = logging.FileHandler(args.log, 'a')
+        keep_fds = [handler.stream.fileno()]
+    else:
+        handler = logging.StreamHandler()
+
+    handler.setFormatter(formatter)
+    workers.logger.addHandler(handler)
+
     if args.daemon:
-        d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=pidfile, action=action)
+        if not args.pidfile:
+            print 'PID file is required for daemon mode!'
+            exit(1)
+
+        d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=args.pidfile, action=action, keep_fds=keep_fds)
         d.start()
     else:
         action()
