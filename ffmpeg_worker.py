@@ -1,14 +1,14 @@
 import pika
-import daemon
-import daemon.pidfile
 import json
 import os
 import os.path
+import sys
 from subprocess import call
 import logging
 import argparse
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+import daemonize
 
 client = MongoClient()
 
@@ -57,11 +57,6 @@ def run_program():
     channel.start_consuming()
 
 
-def daemon_run(pidfile):
-    with daemon.DaemonContext(pidfile=pidfile):
-        run_program()
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='FFMPEG worker queue')
     parser.add_argument('--daemon', '-d', help='run as daemon', action='store_true')
@@ -81,9 +76,10 @@ if __name__ == '__main__':
 
     pidfile = None
     if args.pidfile:
-        pidfile = daemon.pidfile.TimeoutPIDLockFile(args.pidfile)
+        pidfile = args.pidfile
 
     if args.daemon:
-        daemon_run(pidfile)
+        d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=pidfile, action=run_program)
+        d.start()
     else:
         run_program()
