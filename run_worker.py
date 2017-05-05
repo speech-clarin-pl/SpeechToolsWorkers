@@ -37,13 +37,15 @@ if __name__ == '__main__':
     handler.setFormatter(formatter)
     workers.logger.addHandler(handler)
 
+    chdir = os.path.dirname(os.path.realpath(__file__))
+
     if args.daemon:
         if not args.pidfile:
             print 'PID file is required for daemon mode!'
             exit(1)
 
         d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=args.pidfile, action=action, keep_fds=keep_fds,
-                                user=args.user, group=args.group)
+                                user=args.user, group=args.group, chdir=chdir)
         d.start()
     else:
         action()
