@@ -17,6 +17,13 @@ pat = re.compile('[^\w\s]', flags=re.U)
 num = re.compile('[0-9]', flags=re.U)
 ws = re.compile('\s+', flags=re.U)
 
+def change_owner(path, uid, gid):
+    os.chown(path,uid,gid)
+    for root, dirs, files in os.walk(path):
+        for item in dirs:
+            os.chown(os.path.join(root, item), uid, gid)
+        for item in files:
+            os.chown(os.path.join(root, item), uid, gid)
 
 def check_files(dir, files):
     for file in files:
@@ -40,18 +47,24 @@ def align(type, wav_file, txt_file, output):
         return None
 
 
-def run_task(type, id):
+def run_task(type, id, uid=None, gid=None):
     project = get_files_db(id)
     if type == 'forcealign':
         wav_file = project['media']['default']['file_path']
         txt_file = project['media']['default']['trans_file_path']
         output = project['path'] + '/forcealign'
-        return align('ForcedAlign', wav_file, txt_file, output)
+        ret=align('ForcedAlign', wav_file, txt_file, output)
+        if uid and gid:
+            change_owner(output,uid,gid);
+        return ret
     elif type == 'segmentalign':
         wav_file = project['media']['default']['file_path']
         txt_file = project['media']['default']['trans_file_path']
         output = project['path'] + '/segmentalign'
-        return align('SegmentAlign', wav_file, txt_file, output)
+        ret=align('SegmentAlign', wav_file, txt_file, output)
+        if uid and gid:
+            change_owner(output,uid,gid);
+        return ret
     else:
         raise RuntimeError('unknown task type')
 
@@ -72,7 +85,7 @@ def update_db_error(id, type, desc):
     client.clarin.projects.update_one({'_id': ObjectId(id)}, upd)
 
 
-def run_program():
+def run_program(uid=None,gid=None):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
 
@@ -85,7 +98,7 @@ def run_program():
         ch.basic_ack(delivery_tag=method.delivery_tag)
         logging.info('Running {} for {} '.format(data['task'], data['id']))
         try:
-            ret = run_task(data['task'], data['id'])
+            ret = run_task(data['task'], data['id'],uid=uid,gid=gid)
             if ret and len(ret) > 0:
                 update_db(data['id'], data['task'], ret)
             else:
@@ -101,9 +114,9 @@ def run_program():
     channel.start_consuming()
 
 
-def daemon_run(pidfile):
+def daemon_run(pidfile, uid=None, gid=None):
     with daemon.DaemonContext(pidfile=pidfile):
-        run_program()
+        run_program(uid=uid,gid=gid)
 
 
 if __name__ == '__main__':
@@ -111,6 +124,8 @@ if __name__ == '__main__':
     parser.add_argument('--daemon', '-d', help='run as daemon', action='store_true')
     parser.add_argument('--log', '-l', help='log to file')
     parser.add_argument('--pidfile', '-p', help='setup a pid lockfile')
+    parser.add_argument('--uid', '-u', help='change uid of the output dir', default=33)
+    parser.add_argument('--gid', '-g', help='change gid of the output dir', default=33)
 
     args = parser.parse_args()
 
@@ -128,6 +143,6 @@ if __name__ == '__main__':
         pidfile = daemon.pidfile.TimeoutPIDLockFile(args.pidfile)
 
     if args.daemon:
-        daemon_run(pidfile)
+        daemon_run(pidfile,uid=args.uid,gid=args.gid)
     else:
-        run_program()
+        run_program(uid=args.uid,gid=args.gid)

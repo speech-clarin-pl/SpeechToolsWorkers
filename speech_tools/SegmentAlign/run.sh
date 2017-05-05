@@ -2,7 +2,7 @@
 
 set -e -o pipefail
 
-transcriber=~/apps/transcriber
+transcriber=/usr/local/transcriber
 
 echo "$0 $@"  # Print the command line for logging
 . parse_options.sh || exit 1;
@@ -50,7 +50,7 @@ ln -s $KALDI_ROOT/egs/wsj/s5/local
 ./steps/make_mfcc.sh --nj 1 data
 ./steps/compute_cmvn_stats.sh data
 #data preparation
-./local_utils/prepare_dict.sh data dict
+./local_utils/prepare_dict.sh --transcriber $transcriber data dict
 ./utils/prepare_lang.sh dict "<UNK>" tmp lang
 #segmentation and cleaning
 ./steps/cleanup/clean_and_segment_data.sh --nj 1 data lang tri3b_mmi cleanup cleaned
