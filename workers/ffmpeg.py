@@ -52,4 +52,7 @@ def run():
     # channel.basic_qos(prefetch_count=1)
 
     channel.basic_consume(callback, queue='ffmpeg')
-    channel.start_consuming()
+    try:
+        channel.start_consuming()
+    except:
+        logger.exception('channel')

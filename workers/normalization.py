@@ -51,7 +51,7 @@ def run():
         data = json.loads(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
         try:
-            normalize(data['input'], data['output']);
+            normalize(data['input'], data['output'])
         except Exception as e:
             logger.error(e)
         if os.path.exists(data['output']):
@@ -65,4 +65,7 @@ def run():
     # channel.basic_qos(prefetch_count=1)
 
     channel.basic_consume(callback, queue='text_normalizer')
-    channel.start_consuming()
+    try:
+        channel.start_consuming()
+    except:
+        logger.exception('channel')
