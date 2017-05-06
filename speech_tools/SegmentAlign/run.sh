@@ -93,7 +93,7 @@ phonemes_ctm=`readlink -f phonemes.ctm`
 wav_scp=`readlink -f data/wav.scp`
 
 pushd local_utils/CTMtoEMU
-python CTM_to_Emu.py --feat forest ksvF0 rmsana --rm-besi --symlink --wav-scp $wav_scp $emudb $words_ctm $phonemes_ctm
+python CTM_to_Emu.py --feat forest ksvF0 rmsana --rm-besi --symlink --transcriber $transcriber --wav-scp $wav_scp $emudb $words_ctm $phonemes_ctm
 popd
 
 zip -r emuDB.zip emuDB
