@@ -26,10 +26,13 @@ ws = re.compile('\s+', flags=re.U)
 #             os.chown(os.path.join(root, item), uid, gid)
 
 def check_files(dir, files):
+    ret = []
     for file in files:
-        if not os.path.exists(dir + '/' + file):
-            return False
-    return True
+        if os.path.exists(dir + '/' + file):
+            ret.append(file)
+    if len(ret) == 0:
+        return None
+    return ret
 
 
 def align(type, wav_file, txt_file, output):
@@ -40,12 +43,8 @@ def align(type, wav_file, txt_file, output):
         ret = proc.wait()
     if ret != 0:
         return None
-    files = ['words.ctm', 'phonemes.ctm', 'segmentation.TextGrid', 'emuDB']
-    if check_files(output, files):
-        return files
-    else:
-        return None
-
+    files = ['words.ctm', 'phonemes.ctm', 'segmentation.TextGrid', 'emuDB.zip']
+    return check_files(output, files)
 
 def run_task(type, id):
     project = get_files_db(id)

@@ -68,7 +68,9 @@ pushd local_utils/CTMtoEMU
 python CTM_to_Emu.py --feat forest ksvF0 rmsana --rm-besi --wav-scp $wav_scp $emudb $words_ctm $phonemes_ctm
 popd
 
+zip -r emuDB.zip emuDB
+
 echo Finished generating alignment...
 
 echo Files:
-readlink -f {words.ctm,phonemes.ctm,segmentation.TextGrid,emuDB}
+readlink -f {words.ctm,phonemes.ctm,segmentation.TextGrid,emuDB.zip}
