@@ -43,11 +43,11 @@ if __name__ == '__main__':
         pid = PIDLockFile(os.path.realpath(args.pidfile))
 
         if args.user:
-            uid = getpwnam(args.user)
+            uid = getpwnam(args.user)[2]
         else:
             uid = os.getuid()
         if args.group:
-            gid = getgrnam(args.group)
+            gid = getgrnam(args.group)[2]
         else:
             gid = os.getgid()
 
