@@ -3,10 +3,14 @@ import hashlib
 import json
 import os
 
+import pika
 from bson import ObjectId
+from pymongo import MongoClient
 
-from config import channel, logger, db
+from config import logger
 from tasks import text, audio, speech
+
+db = MongoClient()
 
 
 def file_hash(filename):
@@ -32,6 +36,8 @@ def get_file(file_id):
 
 
 def run():
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
     channel.queue_declare(queue='workers', durable=True)
 
     logger.info('Worker queue waiting...')
