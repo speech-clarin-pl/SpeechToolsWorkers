@@ -4,12 +4,9 @@ import json
 import os
 
 from bson import ObjectId
-from pymongo import MongoClient
 
 from config import logger
 from tasks import text, audio, speech
-
-db = MongoClient()
 
 
 def file_hash(filename):
@@ -29,16 +26,18 @@ def files_hash(filenames):
     return h.hexdigest()
 
 
-def get_file(file_id):
-    input_res = db.clarin.resources.find_one({'_id': ObjectId(file_id)})
-    return input_res['file']
-
-
 def run():
     import pika
+    from pymongo import MongoClient
+
+    db = MongoClient()
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
     channel.queue_declare(queue='workers', durable=True)
+
+    def get_file(file_id):
+        input_res = db.clarin.resources.find_one({'_id': ObjectId(file_id)})
+        return input_res['file']
 
     logger.info('Worker queue waiting...')
 
