@@ -1,11 +1,9 @@
 import argparse
 import logging
 import os.path
-from grp import getgrnam
-from pwd import getpwnam
+import sys
 
-import daemon
-from lockfile.pidlockfile import PIDLockFile
+import daemonize
 
 import config
 import worker
@@ -40,19 +38,24 @@ if __name__ == '__main__':
             print 'PID file is required for daemon mode!'
             exit(1)
 
-        pid = PIDLockFile(os.path.realpath(args.pidfile))
+        # pid = PIDLockFile(os.path.realpath(args.pidfile))
+        #
+        # if args.user:
+        #     uid = getpwnam(args.user)[2]
+        # else:
+        #     uid = os.getuid()
+        # if args.group:
+        #     gid = getgrnam(args.group)[2]
+        # else:
+        #     gid = os.getgid()
+        #
+        # with daemon.DaemonContext(pidfile=pid, working_directory=chdir, files_preserve=keep_fds, uid=uid, gid=gid):
+        #     worker.run()
 
-        if args.user:
-            uid = getpwnam(args.user)[2]
-        else:
-            uid = os.getuid()
-        if args.group:
-            gid = getgrnam(args.group)[2]
-        else:
-            gid = os.getgid()
-
-        with daemon.DaemonContext(pidfile=pid, working_directory=chdir, files_preserve=keep_fds, uid=uid, gid=gid):
-            worker.run()
+        d = daemonize.Daemonize(app=os.path.basename(sys.argv[0]), pid=args.pidfile, action=worker.run,
+                                keep_fds=keep_fds,
+                                user=args.user, group=args.group, chdir=chdir)
+        d.start()
 
     else:
         worker.run()
