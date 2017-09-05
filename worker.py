@@ -6,7 +6,7 @@ import os
 from bson import ObjectId
 
 from config import logger
-from tasks import text, audio, speech
+from tasks import text, audio, speech, emu
 
 
 def file_hash(filename):
@@ -61,6 +61,8 @@ def run():
                                                   get_file(data['transcript']))
             elif task == 'recognize':
                 output_name = speech.recognize(data['work_dir'], get_file(data['input']))
+            elif task == 'emupackage':
+                output_name = emu.task.package(data['work_dir'], data['project'], db)
             else:
                 raise RuntimeError('unknown task: ' + task)
 
