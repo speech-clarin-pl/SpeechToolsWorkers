@@ -32,12 +32,13 @@ def package(work_dir, project_id, db):
     if 'deleted' in proj:
         raise RuntimeError('project deleted')
 
-    dir = mkdtemp(dir=work_dir)
+    dir = mkdtemp(suffix='_emuDB', dir=work_dir)
+    proj_name = os.path.basename(dir)
 
     logger.info('Saving CTM in {} (zip)...'.format(dir))
 
-    config = get_config('emu', feats)
-    with codecs.open(os.path.join(dir, 'emu_DBconfig.json'), mode='w', encoding='utf-8') as f:
+    config = get_config(proj_name, feats)
+    with codecs.open(os.path.join(dir, u'{}.json'.format(proj_name)), mode='w', encoding='utf-8') as f:
         json.dump(config, f, indent=4)
 
     sessions = {}

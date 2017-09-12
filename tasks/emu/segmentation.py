@@ -36,6 +36,21 @@ class Level:
     def add(self, start, len, text):
         self.segments.append(Segment(start, len, text, self.idgen))
 
+    def sort(self):
+        self.segments = sorted(self.segments, key=lambda seg: seg.start)
+
+    def fillGaps(self):
+        self.sort()
+        gaps = []
+        for prev, next in zip(self.segments, self.segments[1:]):
+            if next.start > prev.end:
+                gaps.append(Segment(prev.end, next.start - prev.end, '', self.idgen))
+            if next.start < prev.end:
+                prev.end = next.start
+                prev.len = prev.end - prev.start
+        self.segments.extend(gaps)
+        self.sort()
+
     def getAnnotation(self, name, labelname, samplerate=16000, get_segments=True, ph_labels=None):
 
         level = OrderedDict()
@@ -131,6 +146,9 @@ class Segmentation:
                     self.phonemes.add(round(float(tok[2]), 2), round(float(tok[3]), 2), ph)
                 else:
                     self.words.add(round(float(tok[2]), 2), round(float(tok[3]), 2), tok[4])
+
+        self.words.fillGaps()
+        self.phonemes.fillGaps()
 
     def getUttLevel(self, name):
         level = Level(self.idgen)
