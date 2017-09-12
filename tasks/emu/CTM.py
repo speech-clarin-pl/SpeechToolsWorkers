@@ -23,7 +23,7 @@ class Segment:
         tok = re.split('\\s+', line)
 
         if len(tok) < 5:
-            raise RuntimeError('Expected line to have at least 5 tokens (found {})'.format(len(tok)))
+            raise RuntimeError(u'Expected line to have at least 5 tokens (found {})'.format(len(tok)))
 
         self.id = ID.next()
         self.file = tok[0]
@@ -129,7 +129,7 @@ def load_ctm(file, name):
             try:
                 seg = Segment(line.strip())
             except Exception as err:
-                raise RuntimeError(err, 'Error in {}:{} >{}<'.format(file, num, line.strip()))
+                raise RuntimeError(err, u'Error in {}:{} >{}<'.format(file, num, line.strip()))
             if line[0] == '@':
                 phonemes.segments.append(seg)
             else:

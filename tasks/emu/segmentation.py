@@ -129,7 +129,7 @@ class Segmentation:
         with codecs.open(file, encoding='utf-8', mode='r') as f:
             for l in f:
                 tok = l.strip().split(' ')
-                assert len(tok) == 5, 'Wrong tok count in file {}: {}'.format(file, l)
+                assert len(tok) == 5, u'Wrong tok count in file {}: {}'.format(file, l)
                 if tok[0][0] == '@':
                     ph = tok[4]
 

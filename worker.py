@@ -50,7 +50,7 @@ def run():
 
             try:
                 task = data['task']
-                logger.info('Performing {}...'.format(task))
+                logger.info(u'Performing {}...'.format(task))
 
                 if task == 'text_normalize':
                     output_name = text.normalize(data['work_dir'], get_file(data['input']))

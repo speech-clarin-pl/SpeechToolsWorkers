@@ -16,5 +16,5 @@ def run_feat(feat, wav):
         return
     cmd_str = 'library("wrassp")\n'
     for cmd in feat:
-        cmd_str += '{}("{}",outputDirectory="{}")\n'.format(cmd, wav, dirpath)
+        cmd_str += u'{}("{}",outputDirectory="{}")\n'.format(cmd, wav, dirpath)
     sendCommands(cmd_str)

@@ -35,7 +35,7 @@ def package(work_dir, project_id, db):
     dir = mkdtemp(suffix='_emuDB', dir=work_dir)
     proj_name = os.path.basename(dir)
 
-    logger.info('Saving CTM in {} (zip)...'.format(dir))
+    logger.info(u'Saving CTM in {} (zip)...'.format(dir))
 
     config = get_config(proj_name, feats)
     with codecs.open(os.path.join(dir, u'{}.json'.format(proj_name)), mode='w', encoding='utf-8') as f:
@@ -60,19 +60,19 @@ def package(work_dir, project_id, db):
         sessions[sess].append(b)
 
     for sess, bndls in sessions.iteritems():
-        sess_dir = os.path.join(dir, '{}_ses'.format(sess))
+        sess_dir = os.path.join(dir, u'{}_ses'.format(sess))
         os.mkdir(sess_dir)
         for bndl in bndls:
-            bndl_dir = os.path.join(sess_dir, '{}_bndl'.format(bndl['name']))
+            bndl_dir = os.path.join(sess_dir, u'{}_bndl'.format(bndl['name']))
             os.mkdir(bndl_dir)
             bndl_basnam = os.path.join(bndl_dir, bndl['name'])
-            shutil.copy(bndl['audio'], os.path.join(bndl_dir, bndl_basnam + '.wav'))
-            # save_annot(bndl['ctm'], bndl_basnam + '_annot.json', bndl['name'])
+            shutil.copy(bndl['audio'], os.path.join(bndl_dir, bndl_basnam + u'.wav'))
+            # save_annot(bndl['ctm'], bndl_basnam + u'_annot.json', bndl['name'])
             annot = segmentation_to_emu_annot(bndl['ctm'], bndl['name'])
-            with codecs.open(bndl_basnam + '_annot.json', mode='w', encoding='utf-8') as f:
+            with codecs.open(bndl_basnam + u'_annot.json', mode='w', encoding='utf-8') as f:
                 json.dump(annot, f, indent=4)
-            run_feat(feats, bndl_basnam + '.wav')
+            run_feat(feats, bndl_basnam + u'.wav')
 
-    make_archive(dir, dir + '.zip')
+    make_archive(dir, dir + u'.zip')
     shutil.rmtree(dir)
-    return dir + '.zip'
+    return dir + u'.zip'

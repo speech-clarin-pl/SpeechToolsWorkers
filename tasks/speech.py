@@ -6,9 +6,9 @@ from config import logger
 
 
 def align(tool_dir, wav_file, txt_file, output):
-    cmd = ['bash', './speech_tools/{}/run.sh'.format(tool_dir), wav_file, txt_file, output]
+    cmd = ['bash', u'./speech_tools/{}/run.sh'.format(tool_dir), wav_file, txt_file, output]
     with open(os.path.join(output, 'log.txt'), 'w') as log:
-        logger.info('Running {}'.format(' '.join(cmd)))
+        logger.info(u'Running {}'.format(' '.join(cmd)))
         proc = Popen(cmd, stdout=log, stderr=STDOUT)
         ret = proc.wait()
     if ret != 0:
@@ -20,7 +20,7 @@ def align(tool_dir, wav_file, txt_file, output):
 def reco(wav_file, output):
     cmd = ['bash', './speech_tools/Recognize/run.sh', wav_file, output]
     with open(os.path.join(output, 'log.txt'), 'w') as log:
-        logger.info('Running {}'.format(' '.join(cmd)))
+        logger.info(u'Running {}'.format(' '.join(cmd)))
         proc = Popen(cmd, stdout=log, stderr=STDOUT)
         ret = proc.wait()
     if ret != 0:
