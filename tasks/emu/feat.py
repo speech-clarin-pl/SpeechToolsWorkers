@@ -4,7 +4,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 def sendCommands(commands):
     p = Popen(['R', '--vanilla'], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
-    p.stdin.write(commands)
+    p.stdin.write(commands.encode('utf-8'))
     p.stdin.close()
     for l in p.stdout.readlines():
         pass
