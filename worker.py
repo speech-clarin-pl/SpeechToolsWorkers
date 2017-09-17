@@ -69,6 +69,9 @@ def run():
                 else:
                     raise RuntimeError('unknown task: ' + task)
 
+                if os.path.isabs(output_name):
+                    output_name = os.path.relpath(output_name, start=data['work_dir'])
+
                 output_file = os.path.join(data['work_dir'], output_name)
 
                 hash = file_hash(output_file)
