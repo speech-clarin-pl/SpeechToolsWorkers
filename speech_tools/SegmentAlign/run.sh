@@ -59,7 +59,7 @@ echo "input input 1" > cleaned/reco2file_and_channel
 #alignemnt of clean data
 ./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} cleaned lang tri3b_mmi ali_clean
 #adaptation to clean data
-./steps/train_sat.sh 2500 15000 cleaned lang ali_clean adapted
+./steps/train_map.sh cleaned lang ali_clean adapted
 #resegmentation using adapted model
 ./steps/cleanup/clean_and_segment_data.sh --nj 1 data lang adapted cleanup_ad cleaned_ad
 echo "input input 1" > cleaned_ad/reco2file_and_channel
