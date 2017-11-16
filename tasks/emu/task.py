@@ -49,7 +49,7 @@ def package(work_dir, project_id, db):
         b = {}
         b['name'] = name  # TODO cleanup name here
         b['audio'] = os.path.join(work_dir, get_file(db, bundle['audio']))
-        b['ctm'] = get_file(db, bundle['seg'])  # TODO fix CTM to relative path!
+        b['ctm'] = os.path.join(work_dir, get_file(db, bundle['seg']))
 
         if not b['audio'] or not b['ctm']:
             continue
