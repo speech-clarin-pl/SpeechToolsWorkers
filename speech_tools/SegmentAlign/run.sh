@@ -2,7 +2,8 @@
 
 set -e -o pipefail
 
-transcriber=/usr/local/transcriber
+beam=20
+retry_beam=300
 
 echo "$0 $@"  # Print the command line for logging
 . parse_options.sh || exit 1;
@@ -56,14 +57,14 @@ ln -s $KALDI_ROOT/egs/wsj/s5/local
 ./steps/cleanup/clean_and_segment_data.sh --nj 1 data lang tri3b_mmi cleanup cleaned
 echo "input input 1" > cleaned/reco2file_and_channel
 #alignemnt of clean data
-./steps/align_fmllr.sh --nj 1 cleaned lang tri3b_mmi ali_clean
+./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} cleaned lang tri3b_mmi ali_clean
 #adaptation to clean data
 ./steps/train_sat.sh 2500 15000 cleaned lang ali_clean adapted
 #resegmentation using adapted model
 ./steps/cleanup/clean_and_segment_data.sh --nj 1 data lang adapted cleanup_ad cleaned_ad
 echo "input input 1" > cleaned_ad/reco2file_and_channel
 #alignemnt of adapted clean data
-./steps/align_fmllr.sh --nj 1 cleaned_ad lang adapted ali_ad
+./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} cleaned_ad lang adapted ali_ad
 #make CTM in the ali folder
 ./steps/get_train_ctm.sh cleaned_ad lang ali_ad
 python local_utils/fix_ctm.py ali_ad/ctm ali_ad/ctm.fixed
@@ -73,7 +74,7 @@ python local_utils/fix_ctm.py ali_ad/phonectm ali_ad/phonectm.fixed
 sort -k3n ali_ad/ctm -o ali_ad/ctm.sorted
 ./local_utils/get_deleted_seg.sh cleanup_ad lang data ali_ad/ctm.sorted deleted
 #force realign missing segments
-./steps/align_fmllr.sh --nj 1 deleted lang adapted ali_deleted
+./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} deleted lang adapted ali_deleted
 echo "input input 1" > deleted/reco2file_and_channel
 ./steps/get_train_ctm.sh deleted lang ali_deleted
 python local_utils/fix_ctm.py ali_deleted/ctm ali_deleted/ctm.fixed

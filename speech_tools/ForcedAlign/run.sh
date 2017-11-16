@@ -2,6 +2,9 @@
 
 set -e -o pipefail
 
+beam=20
+retry_beam=300
+
 echo "$0 $@"  # Print the command line for logging
 . parse_options.sh || exit 1;
 
@@ -48,7 +51,7 @@ ln -s $KALDI_ROOT/egs/wsj/s5/local
 ./steps/compute_cmvn_stats.sh data
 ./local_utils/prepare_dict.sh data dict
 ./utils/prepare_lang.sh dict "<unk>" tmp lang
-./steps/align_fmllr.sh --nj 1 data lang tri3b_mmi ali
+./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} data lang tri3b_mmi ali
 ./steps/get_train_ctm.sh data lang ali
 ./local_utils/get_phoneme_ctm.sh data lang ali
 
