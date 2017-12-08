@@ -39,6 +39,8 @@ def run():
 
         def get_file(file_id):
             input_res = db.clarin.resources.find_one({'_id': ObjectId(file_id)})
+            if not input_res or not input_res['file']:
+		raise RuntimeError('File resource not found!')
             return input_res['file']
 
         logger.info('Worker queue waiting...')
