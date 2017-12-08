@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/RMQWorker.iml" filepath="$PROJECT_DIR$/.idea/RMQWorker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SpeechToolsWorkers.iml" filepath="$PROJECT_DIR$/.idea/SpeechToolsWorkers.iml" />
     </modules>
   </component>
 </project>
