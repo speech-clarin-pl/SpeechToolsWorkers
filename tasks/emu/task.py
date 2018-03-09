@@ -42,19 +42,19 @@ def package(work_dir, project_id, db):
         json.dump(config, f, indent=4)
 
     sessions = {}
-    for name, bundle in proj['bundles'].iteritems():
+    for bundle_id, bundle in proj['bundles'].iteritems():
         if 'audio' not in bundle or 'seg' not in bundle:
             continue
 
         b = {}
-        b['name'] = name  # TODO cleanup name here
+        b['name'] = bundle['name']
         b['audio'] = os.path.join(work_dir, get_file(db, bundle['audio']))
         b['ctm'] = os.path.join(work_dir, get_file(db, bundle['seg']))
 
         if not b['audio'] or not b['ctm']:
             continue
 
-        sess = bundle['session']  # TODO cleanup name here as well
+        sess = bundle['session']
         if sess not in sessions:
             sessions[sess] = []
         sessions[sess].append(b)
