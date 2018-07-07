@@ -19,7 +19,7 @@ def convert_ctm_to_textgrid(ctms,textgrid):
 			try:
 					t.add(round(seg[1],2),round(seg[1]+seg[2],2),seg[0])
 			except ValueError:
-					print "Error in seg: "+seg[0]
+					print("Error in seg: "+seg[0])
 		tg=TextGrid()
 		tg.append(t)
 		with open(textgrid,'w') as f:
