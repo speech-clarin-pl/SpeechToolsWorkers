@@ -1,0 +1,12 @@
+FROM danijel3/clarin-pl-speechmodels:pkf
+MAINTAINER Danijel Koržinek <danijel@pja.edu.pl>
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+COPY parse_options.sh /parse_options.sh
+
+COPY tools /tools
+
+COPY dist /dist
+
+ENTRYPOINT ["/bin/bash","-c"]
