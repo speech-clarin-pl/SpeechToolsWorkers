@@ -24,7 +24,7 @@ to include it in other images.
 
 This image is somewhat optimized in size, although more optimizations can probably be done.
 
-This image compiles a standard version of Kaldi, which isn't particularly optimized for speed. Some Makefile changes
+This image compiles a standard version of Kaldi, with some basic optimizations for speed. Some more Makefile changes
 would be helpful.
 
 This image uses the standard "easy-to-install" Atlas library. The greatest improvement can come from utilizing a better
