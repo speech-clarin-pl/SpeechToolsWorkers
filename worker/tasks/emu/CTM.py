@@ -2,7 +2,7 @@ import codecs
 import re
 from collections import OrderedDict
 
-import ID
+from worker.tasks.emu import ID
 
 EPSILON = 5e-3
 
@@ -23,7 +23,7 @@ class Segment:
         tok = re.split('\\s+', line)
 
         if len(tok) < 5:
-            raise RuntimeError(u'Expected line to have at least 5 tokens (found {})'.format(len(tok)))
+            raise RuntimeError(f'Expected line to have at least 5 tokens (found {len(tok)})')
 
         self.id = ID.next()
         self.file = tok[0]
@@ -43,7 +43,7 @@ class CTM:
         self.segments = []
         self.besi = re.compile('^.*_[BESI]$')
 
-    def getAnnotation(self, name, labelname, samplerate=16000, get_segments=True, rmbesi=False):
+    def get_annotation(self, name, labelname, samplerate=16000, get_segments=True, rmbesi=False):
 
         level = OrderedDict()
 
@@ -83,7 +83,7 @@ class CTM:
 
         return level
 
-    def getLinks(self, other_ctm):
+    def get_links(self, other_ctm):
 
         links = []
 
@@ -97,7 +97,7 @@ class CTM:
 
         return links
 
-    def getUttFile(self):
+    def get_utt_file(self):
         ctm = CTM(self.name)
         min = max = 0
 

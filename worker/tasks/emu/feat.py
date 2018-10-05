@@ -2,7 +2,7 @@ import os
 from subprocess import Popen, PIPE, STDOUT
 
 
-def sendCommands(commands):
+def send_commands(commands):
     p = Popen(['R', '--vanilla'], stdin=PIPE, stdout=PIPE, stderr=STDOUT)
     p.stdin.write(commands.encode('utf-8'))
     p.stdin.close()
@@ -17,4 +17,4 @@ def run_feat(feat, wav):
     cmd_str = 'library("wrassp")\n'
     for cmd in feat:
         cmd_str += u'{}("{}",outputDirectory="{}")\n'.format(cmd, wav, dirpath)
-    sendCommands(cmd_str)
+    send_commands(cmd_str)

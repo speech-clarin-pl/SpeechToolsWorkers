@@ -15,12 +15,18 @@ data_dir=$(readlink -f ../work)
 
 Next we can run ASR on the file within the data folder. To do this, we need to attach the data folder to the container.
 The container will then read the file and from the data folder and save the output to the same folder.
-The names can be given as arguments (in case you don't want to overrite any other files).
+The names can be given as arguments (in case you don't want to overwrite any other files).
 This attached folder is only used to read/write the files given as arguments.
-All other files are kept within the containers temp storage.
+All other files are kept within the container's temp storage.
 
 ```
 docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/Recognize/run.sh test.wav trans.txt"
+```
+
+To compute WER, we can use the standard built-in Kaldi utility:
+
+```
+docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/kaldi/src/bin/compute-wer ark:/data/test.txt ark:/data/trans.txt"
 ```
 
 Now we can run the same image to align the recognized transcription to the original audio:
@@ -33,4 +39,28 @@ For longer files we can use a more lenient alignment process:
 
 ```
 docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/SegmentAlign/run.sh long.wav long.txt ali.ctm"
+```
+
+To perform speech activity detection (SAD, aka VAD):
+
+```
+docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/SpeechActivityDetection/run.sh switchboard.wav vad.ctm"
+```
+
+You might want to convert the file to a Praat TextGrid for analysis:
+
+```
+docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "python /dist/local_utils/convert_ctm_tg.py /data/vad.ctm /data/vad.TextGrid"
+```
+
+We can also try speaker diarization:
+
+```
+docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/SpeakerDiarization/run.sh switchboard.wav spk.ctm"
+```
+
+To perform keyword spotting, use this command:
+
+```
+docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:sejm "/tools/KeywordSpotting/run.sh sejm.wav keywords.txt sejm.kws"
 ```

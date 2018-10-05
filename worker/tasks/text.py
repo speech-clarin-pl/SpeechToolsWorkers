@@ -3,7 +3,7 @@ import os
 import re
 from tempfile import mkstemp
 
-from config import logger
+from worker.config import logger
 
 pat = re.compile('[^\w\s]', flags=re.U)
 num = re.compile('[0-9]', flags=re.U)

@@ -39,7 +39,7 @@ class Level:
     def sort(self):
         self.segments = sorted(self.segments, key=lambda seg: seg.start)
 
-    def fillGaps(self):
+    def fill_gaps(self):
         self.sort()
         gaps = []
         for prev, next in zip(self.segments, self.segments[1:]):
@@ -51,7 +51,7 @@ class Level:
         self.segments.extend(gaps)
         self.sort()
 
-    def getAnnotation(self, name, labelname, samplerate=16000, get_segments=True, ph_labels=None):
+    def get_annotation(self, name, labelname, samplerate=16000, get_segments=True, ph_labels=None):
 
         level = OrderedDict()
 
@@ -96,7 +96,7 @@ class Level:
 
         return level
 
-    def getLinks(self, other_ctm):
+    def get_links(self, other_ctm):
         links = []
 
         for seg in self.segments:
@@ -147,10 +147,10 @@ class Segmentation:
                 else:
                     self.words.add(round(float(tok[2]), 2), round(float(tok[3]), 2), tok[4])
 
-        self.words.fillGaps()
-        self.phonemes.fillGaps()
+        self.words.fill_gaps()
+        self.phonemes.fill_gaps()
 
-    def getUttLevel(self, name):
+    def get_utt_level(self, name):
         level = Level(self.idgen)
         min = max = 0
         for seg in self.words.segments:
@@ -175,19 +175,19 @@ def segmentation_to_emu_annot(file, name, samplerate=16000.0, rm_besi=True, scri
     levels = []
     annot['levels'] = levels
 
-    utterance = seg.getUttLevel(name)
+    utterance = seg.get_utt_level(name)
     words = seg.words
     phonemes = seg.phonemes
 
-    levels.append(utterance.getAnnotation('Utterance', 'Utterance', get_segments=False))
+    levels.append(utterance.get_annotation('Utterance', 'Utterance', get_segments=False))
 
-    levels.append(words.getAnnotation('Word', 'Word', samplerate))
+    levels.append(words.get_annotation('Word', 'Word', int(samplerate)))
 
-    levels.append(phonemes.getAnnotation('Phoneme', 'Phoneme', samplerate,
-                                         ph_labels=[('SAMPA', pl_sampa_map), ('IPA', pl_ipa_map)]))
+    levels.append(phonemes.get_annotation('Phoneme', 'Phoneme', int(samplerate),
+                                          ph_labels=[('SAMPA', pl_sampa_map), ('IPA', pl_ipa_map)]))
 
-    uttlinks = utterance.getLinks(words)
-    wordlinks = words.getLinks(phonemes)
+    uttlinks = utterance.get_links(words)
+    wordlinks = words.get_links(phonemes)
 
     annot['links'] = uttlinks + wordlinks
 

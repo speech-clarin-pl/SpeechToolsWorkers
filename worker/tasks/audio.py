@@ -2,7 +2,7 @@ import os
 from subprocess import call, STDOUT
 from tempfile import mkstemp
 
-from config import logger
+from worker.config import logger
 
 
 def ffmpeg(dir, file):

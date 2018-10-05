@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
-import urllib
-import urllib2
 from collections import OrderedDict
+from urllib.parse import quote_plus
+from urllib.request import urlopen
 
 from pyphen import Pyphen
 
-import ID
 #
 # sylaby akcentowane
 #
@@ -33,7 +32,8 @@ import ID
 # I jeszcze przypomnienie:
 # Wyrazy obce, które są w językach pochodzenia akcentowane na drugiej sylabie od końca albo niepochodzące z łaciny klasycznej, akcentujemy na tej sylabie: biblioteka, episkopat, kapitan, liceum, muzeum, panaceum, oficer, wizyta, atmosfera.
 #
-from config import transcribe_word_url
+from worker.config import transcribe_word_url
+from worker.tasks.emu import ID
 
 
 class Syllable:
@@ -46,7 +46,7 @@ class Syllable:
     def __str__(self):
         arr = []
         for ph in self.phonemes:
-            arr.append(unicode(ph.text))
+            arr.append(ph.text)
         return u'{} ({})'.format(self.text, arr)
 
 
@@ -60,8 +60,8 @@ def transcribe(word):
     ret = []
     if not word:
         return ret
-    url = transcribe_word_url + urllib.quote_plus(word.encode('utf-8'))
-    trans = json.loads(urllib2.urlopen(url).read())
+    url = transcribe_word_url + quote_plus(word.encode('utf-8'))
+    trans = json.loads(urlopen(url).read())
     for t in trans:
         ret.append(t.split(' '))
     return ret
@@ -75,7 +75,7 @@ def phonemes_to_word(phonemes):
     return ''.join(phonemes)
 
 
-stress_exceptions = set(['maksimum', 'minimum', 'rzeczpospolita', 'uniwersytet', 'mianownik', 'polemika'])
+stress_exceptions = {'maksimum', 'minimum', 'rzeczpospolita', 'uniwersytet', 'mianownik', 'polemika'}
 
 
 class Word:
@@ -119,10 +119,10 @@ class Word:
     def __str__(self):
         arr = []
         for syl in self.word_syllables:
-            arr.append(unicode(syl))
+            arr.append(syl)
         arr_ph = []
         for syl in self.ph_syllables:
-            arr_ph.append(unicode(syl))
+            arr_ph.append(syl)
 
         return u'{}\n{}\n>>{}\n>>{}'.format(self.word.text, arr, self.phonemes, arr_ph)
 
@@ -171,7 +171,8 @@ class Syllables:
 
                         # print u'Added: ' + unicode(word)
 
-    def match_syllables(self, syllables, phonemes, phoneme_tr):
+    @staticmethod
+    def match_syllables(syllables, phonemes, phoneme_tr):
         stack = [(phonemes, phoneme_tr, 0, [])]
         # stack >> phoneme list, phoneme transcription, syllable index, output
         while len(stack) > 0:
@@ -193,7 +194,7 @@ class Syllables:
 
         return None
 
-    def getWordAnnotation(self, name, labelname, stresslabel):
+    def get_word_annotation(self, name, labelname, stresslabel):
         level = OrderedDict()
 
         level['name'] = name
@@ -229,7 +230,7 @@ class Syllables:
 
         return level
 
-    def getPhonemeAnnotation(self, name, labelname, stresslabel):
+    def get_phoneme_annotation(self, name, labelname, stresslabel):
         level = OrderedDict()
 
         level['name'] = name
@@ -265,7 +266,7 @@ class Syllables:
 
         return level
 
-    def getLinks(self):
+    def get_links(self):
         links = []
 
         for word in self.words:

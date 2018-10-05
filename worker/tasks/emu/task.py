@@ -6,11 +6,11 @@ from tempfile import mkdtemp
 
 from bson import ObjectId
 
-from config import logger
-from tasks.emu.Config import get_config
-from tasks.emu.feat import run_feat
-from tasks.emu.segmentation import segmentation_to_emu_annot
-from tasks.emu.zip import make_archive
+from worker.config import logger
+from worker.tasks.emu.Config import get_config
+from worker.tasks.emu.feat import run_feat
+from worker.tasks.emu.segmentation import segmentation_to_emu_annot
+from worker.tasks.emu.zip import make_archive
 
 
 def get_file(db, file_id):
@@ -46,10 +46,8 @@ def package(work_dir, project_id, db):
         if 'audio' not in bundle or 'seg' not in bundle:
             continue
 
-        b = {}
-        b['name'] = bundle['name']
-        b['audio'] = os.path.join(work_dir, get_file(db, bundle['audio']))
-        b['ctm'] = os.path.join(work_dir, get_file(db, bundle['seg']))
+        b = {'name': bundle['name'], 'audio': os.path.join(work_dir, get_file(db, bundle['audio'])),
+             'ctm': os.path.join(work_dir, get_file(db, bundle['seg']))}
 
         if not b['audio'] or not b['ctm']:
             continue
@@ -59,7 +57,7 @@ def package(work_dir, project_id, db):
             sessions[sess] = []
         sessions[sess].append(b)
 
-    for sess, bndls in sessions.iteritems():
+    for sess, bndls in sessions.items():
         sess_dir = os.path.join(dir, u'{}_ses'.format(sess))
         os.mkdir(sess_dir)
         for bndl in bndls:

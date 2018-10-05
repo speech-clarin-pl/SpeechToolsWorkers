@@ -2,7 +2,7 @@ import os
 from subprocess import Popen, STDOUT
 from tempfile import mkdtemp
 
-from config import logger
+from worker.config import logger
 
 
 def align(tool_dir, wav_file, txt_file, output):

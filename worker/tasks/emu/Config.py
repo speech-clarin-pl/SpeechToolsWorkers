@@ -1,5 +1,7 @@
-from collections import OrderedDict
+from collections.__init__ import OrderedDict
 from uuid import uuid1
+
+from worker.config import logger
 
 features = {'forest': {'name': 'Formants',
                        'columnName': 'fm',
@@ -91,7 +93,7 @@ def get_default_emu_config(feats):
     return config
 
 
-def getLevel(name, labelname, itemtype='SEGMENT', labeltype='STRING'):
+def get_level(name, labelname, itemtype='SEGMENT', labeltype='STRING'):
     level = OrderedDict()
 
     level['name'] = name
@@ -113,7 +115,7 @@ def getLevel(name, labelname, itemtype='SEGMENT', labeltype='STRING'):
     return level
 
 
-def getLink(from_level, to_level, type='ONE_TO_MANY'):
+def get_link(from_level, to_level, type='ONE_TO_MANY'):
     link = OrderedDict()
     link['type'] = type
     link['superlevelName'] = from_level
@@ -136,26 +138,26 @@ def get_config(name, feats):
             if feat in features:
                 tracks.append(features[feat])
             else:
-                print u'Warning: feature not recognized -- {}'.format(feat)
+                logger.warn('Warning: feature not recognized -- {}'.format(feat))
 
     levels = []
     config['levelDefinitions'] = levels
 
-    levels.append(getLevel('Utterance', 'Utterance', itemtype='ITEM'))
-    levels.append(getLevel('Word', 'Word'))
+    levels.append(get_level('Utterance', 'Utterance', itemtype='ITEM'))
+    levels.append(get_level('Word', 'Word'))
     # levels.append(getLevel('Syllable', ['Syllable', 'Stress'], itemtype='ITEM'))
     # levels.append(getLevel('Phonetic Syllable', ['Syllable', 'Stress'], itemtype='ITEM'))
-    levels.append(getLevel('Phoneme', ['Phoneme', 'SAMPA', 'IPA']))
+    levels.append(get_level('Phoneme', ['Phoneme', 'SAMPA', 'IPA']))
 
     links = []
     config['linkDefinitions'] = links
 
-    links.append(getLink('Utterance', 'Word'))
+    links.append(get_link('Utterance', 'Word'))
     # links.append(getLink('Word', 'Syllable'))
     # links.append(getLink('Word', 'Phonetic Syllable'))
     # links.append(getLink('Syllable', 'Phoneme'))
     # links.append(getLink('Phonetic Syllable', 'Phoneme'))
-    links.append(getLink('Word', 'Phoneme'))
+    links.append(get_link('Word', 'Phoneme'))
 
     config['EMUwebAppConfig'] = get_default_emu_config(feats)
 
