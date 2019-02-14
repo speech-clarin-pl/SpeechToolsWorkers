@@ -1,4 +1,7 @@
-all: studio sejm pkf
+all: blank studio sejm pkf
+
+blank:
+	docker build -t danijel3/clarin-pl-speechtools -f Dockerfile .
 
 studio:
 	docker build -t danijel3/clarin-pl-speechtools:studio -f Dockerfile.studio .

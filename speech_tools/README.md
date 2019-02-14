@@ -64,3 +64,9 @@ To perform keyword spotting, use this command:
 ```
 docker run --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:sejm "/tools/KeywordSpotting/run.sh sejm.wav keywords.txt sejm.kws"
 ```
+
+To perform G2P on a wordlist, we have a small script:
+
+```
+docker run -it --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/misc/transcribe_word_list.sh wordlist lexicon"
+```
