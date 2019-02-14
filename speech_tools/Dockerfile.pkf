@@ -5,7 +5,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 COPY parse_options.sh /parse_options.sh
 
-RUN python -m pip install textgrid
+RUN python -m pip install textgrid pympi-ling
 
 RUN apt-get update && \
     apt-get install -y bc && \
