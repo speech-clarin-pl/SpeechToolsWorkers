@@ -82,7 +82,7 @@ done
 ./steps/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 --frames-per-chunk 140 --nj $nj --num-threads 4 --online-ivector-dir ivectors --skip-scoring true tree/graph data tdnn/decode
 ./steps/lmrescore_const_arpa.sh --skip-scoring true lang_test lang_carpa data tdnn/decode tdnn/decode_rs
 
-lattice-best-path --lm-scale=12 "ark:gunzip -c tdnn/decode_rs/lat.*.gz|" ark,t:- | ./utils/int2sym.pl -f 2- tree/graph/words.txt | cut -f2- -d' '  > $out
+lattice-best-path --lm-scale=12 "ark:gunzip -c tdnn/decode_rs/lat.*.gz|" ark,t:- | ./utils/int2sym.pl -f 2- tree/graph/words.txt | sed 's:^seg_[^_]*_::' | sort | cut -f2- -d' '  > $out
 
 echo Finished recognizing...
 
