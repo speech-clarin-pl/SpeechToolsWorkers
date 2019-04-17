@@ -9,13 +9,17 @@ data_path=/data
 model_name=default
 
 beam=20
-retry_beam=300
+retry_beam=800
+
 
 echo "$0 $@"  # Print the command line for logging
+
 . parse_options.sh || exit 1;
 
 if [ $# -ne 3 ]; then
-  echo "Usage: ./run.sh <input-wav> <input-txt> <out-ctm>"
+  echo "Usage: ./run.sh <input-wav> <input-txt> <proj-name>"
+  echo "Creates a folder <proj-name> and aligns the WAV/TXT inside it."
+  echo "Result is saved in <proj-name>/output.ctm"
   echo ""
   echo "Options:"
   echo "    --model_name"
@@ -42,7 +46,6 @@ done
 
 [ ! -d "${dist_path}/model/${model_name}" ] &&  echo "need to get the proper model: ${model_name}" && exit 1;
 
-
 if [ -e "$tmp_path" ] ; then
 	rm -rf ${tmp_path}
 fi
@@ -61,7 +64,6 @@ ln -s ${dist_path}/path.sh
 ln -s ${dist_path}/local_utils
 ln -s ${dist_path}/model/${model_name}/tri3b_mmi
 ln -s ${dist_path}/model/${model_name}/phonetisaurus
-
 
 . path.sh
 
@@ -95,23 +97,25 @@ python local_utils/fix_ctm.py ali_ad/ctm ali_ad/ctm.fixed
 python local_utils/fix_ctm.py ali_ad/phonectm ali_ad/phonectm.fixed
 #get missing segments
 sort -k3n ali_ad/ctm -o ali_ad/ctm.sorted
-./local_utils/get_deleted_seg.sh cleanup_ad lang data ali_ad/ctm.sorted deleted
-#force realign missing segments
-./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} deleted lang adapted ali_deleted
-echo "input input 1" > deleted/reco2file_and_channel
-./steps/get_train_ctm.sh deleted lang ali_deleted
-python local_utils/fix_ctm.py ali_deleted/ctm ali_deleted/ctm.fixed
-./local_utils/get_phoneme_ctm.sh deleted lang ali_deleted
-python local_utils/fix_ctm.py ali_deleted/phonectm ali_deleted/phonectm.fixed
-#merge CTMs
-cat ali_ad/ctm.fixed ali_deleted/ctm.fixed > ctm.combined
-python local_utils/fix_ctm.py ctm.combined  words.ctm
-cat ali_ad/phonectm.fixed ali_deleted/phonectm.fixed > phonectm.combined
-python local_utils/fix_ctm.py phonectm.combined phonemes.ctm
+./local_utils/get_deleted_seg.sh cleanup_ad lang data ali_ad/ctm.sorted deleted || true
+if [ -s deleted/segments ] ; then #if there are any missing segments
+	#force realign missing segments
+	./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} deleted lang adapted ali_deleted
+	echo "input input 1" > deleted/reco2file_and_channel
+	./steps/get_train_ctm.sh deleted lang ali_deleted
+	python local_utils/fix_ctm.py ali_deleted/ctm ali_deleted/ctm.fixed
+	./local_utils/get_phoneme_ctm.sh deleted lang ali_deleted
+	python local_utils/fix_ctm.py ali_deleted/phonectm ali_deleted/phonectm.fixed
+	#merge CTMs
+	cat ali_ad/ctm.fixed ali_deleted/ctm.fixed > ctm.combined
+	python local_utils/fix_ctm.py ctm.combined  words.ctm
+	cat ali_ad/phonectm.fixed ali_deleted/phonectm.fixed > phonectm.combined
+	python local_utils/fix_ctm.py phonectm.combined phonemes.ctm
+else
+	cp ali_ad/ctm.fixed words.ctm
+	cp ali_ad/phonectm.fixed phonemes.ctm
+fi
 
 awk '$0="@"$0' phonemes.ctm | cat words.ctm - | sort -r -k3n > $out
 
 echo Finished generating alignment...
-
-echo "Cleaning up..."
-rm -rf ${tmp_path}
