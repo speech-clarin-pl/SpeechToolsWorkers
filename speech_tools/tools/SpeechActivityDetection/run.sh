@@ -39,7 +39,7 @@ fi
 mkdir -p ${tmp_path}
 mkdir ${tmp_path}/data
 
-tmp_wav_file=${tmp_path}/$(basename $wav_file)
+tmp_wav_file=${tmp_path}/$(basename $wav_file).wav
 sox $wav_file -r8k $tmp_wav_file
 
 echo input $tmp_wav_file > ${tmp_path}/data/wav.scp

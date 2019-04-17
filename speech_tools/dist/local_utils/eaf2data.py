@@ -1,8 +1,8 @@
 import argparse
-import codecs
-from pathlib import Path
-from pympi.Elan import Eaf
 import re
+from pathlib import Path
+
+from pympi.Elan import Eaf
 
 re_pat = re.compile('[^\w\s]', flags=re.U)
 re_num = re.compile('[0-9]', flags=re.U)
@@ -58,22 +58,22 @@ if __name__ == '__main__':
             if spk_tier:
                 spk = t + '_'
             else:
-                spk = 'spk{:02d}'.format(num)
+                spk = f'spk{num:02d}'
                 num += 1
             segments.append(Segment(id, start, end, text, spk, t))
 
-    with codecs.open(str(data_path / 'text'), mode='w', encoding='utf-8') as f:
+    with open(str(data_path / 'text'), mode='w') as f:
         for seg in segments:
-            f.write('{}_{} {}\n'.format(seg.spk, seg.id, seg.text))
+            f.write(f'{seg.spk}_{seg.id} {seg.text}\n')
 
-    with codecs.open(str(data_path / 'segments'), mode='w', encoding='utf-8') as f:
+    with open(str(data_path / 'segments'), mode='w') as f:
         for seg in segments:
-            f.write('{}_{} input {} {}\n'.format(seg.spk, seg.id, seg.start, seg.end))
+            f.write(f'{seg.spk}_{seg.id} input {seg.start} {seg.end}\n')
 
-    with codecs.open(str(data_path / 'utt2spk'), mode='w', encoding='utf-8') as f:
+    with open(str(data_path / 'utt2spk'), mode='w') as f:
         for seg in segments:
-            f.write('{}_{} {}\n'.format(seg.spk, seg.id, seg.spk))
+            f.write(f'{seg.spk}_{seg.id} {seg.spk}\n')
 
-    with codecs.open(str(data_path / 'seg2tier'), mode='w', encoding='utf-8') as f:
+    with open(str(data_path / 'seg2tier'), mode='w') as f:
         for seg in segments:
-            f.write('{} {}\n'.format(seg.id, seg.tier))
+            f.write(f'{seg.id} {seg.tier}\n')

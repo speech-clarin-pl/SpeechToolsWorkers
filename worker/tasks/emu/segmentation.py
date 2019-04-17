@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import codecs
 import re
 from collections import OrderedDict
 
@@ -11,7 +10,7 @@ pl_ipa_map = {'e': u'ɛ', 'en': u'ɛ̃', 'I': u'ɨ', 'o': u'ɔ', 'on': u'ɔ̃', 
               'Z': u'ʐ'}
 
 EPSILON = 0.01
-besi = re.compile('^.*_[BESI]$')
+besi = re.compile(r'^.*_[BESI]$')
 
 
 class Segment:
@@ -126,10 +125,10 @@ class Segmentation:
         self.phonemes = Level(self.idgen)
 
     def read(self, file, rm_besi=True, script=None):
-        with codecs.open(file, encoding='utf-8', mode='r') as f:
+        with open(file) as f:
             for l in f:
                 tok = l.strip().split(' ')
-                assert len(tok) == 5, u'Wrong tok count in file {}: {}'.format(file, l)
+                assert len(tok) == 5, f'Wrong tok count in file {file}:{l}'
                 if tok[0][0] == '@':
                     ph = tok[4]
 

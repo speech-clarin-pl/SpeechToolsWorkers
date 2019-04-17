@@ -1,51 +1,73 @@
-import os
-from subprocess import Popen, STDOUT
-from tempfile import mkdtemp
+from pathlib import Path
+from shutil import rmtree
+from subprocess import run, STDOUT, CalledProcessError
+from tempfile import mkdtemp, NamedTemporaryFile
 
-from worker.config import logger
-
-
-def align(tool_dir, wav_file, txt_file, output):
-    cmd = ['bash', u'./speech_tools/{}/run.sh'.format(tool_dir), wav_file, txt_file, output]
-    with open(os.path.join(output, 'log.txt'), 'w') as log:
-        logger.info(u'Running {}'.format(' '.join(cmd)))
-        proc = Popen(cmd, stdout=log, stderr=STDOUT)
-        ret = proc.wait()
-    if ret != 0:
-        raise RuntimeError('error running script in {}'.format(output))
-    if not os.path.exists(os.path.join(output, 'output.ctm')):
-        raise RuntimeError('output.ctm missing')
+from worker.config import logger, speech_tools_path
 
 
-def reco(wav_file, output):
-    cmd = ['bash', './speech_tools/Recognize/run.sh', wav_file, output]
-    with open(os.path.join(output, 'log.txt'), 'w') as log:
-        logger.info(u'Running {}'.format(' '.join(cmd)))
-        proc = Popen(cmd, stdout=log, stderr=STDOUT)
-        ret = proc.wait()
-    if ret != 0:
-        raise RuntimeError('error running script in {}'.format(output))
-    if not os.path.exists(os.path.join(output, 'output.txt')):
-        raise RuntimeError('output.txt missing')
+def run_tool(tool_name: str, wav_file: Path, aux_file: Path, output_file: Path, work_dir: Path):
+    tmp_dir = Path(mkdtemp(dir=work_dir))
+
+    cmd = ['bash', f'tools/{tool_name}/run.sh', '--dist-path', str(speech_tools_path / 'dist'),
+           '--tmp-path', str(tmp_dir), str(wav_file)]
+    if aux_file:
+        cmd.append(str(aux_file))
+    cmd.append(str(output_file))
+
+    with open(str(output_file) + '_log.txt', 'w') as log:
+        logger.info(f'Running {" ".join(cmd)}')
+        try:
+            run(cmd, stdout=log, stderr=STDOUT, check=True, cwd=speech_tools_path)
+        except CalledProcessError:
+            raise RuntimeError(f'error running script for {output_file}')
+        finally:
+            rmtree(str(tmp_dir))
+
+    if not output_file.exists():
+        raise RuntimeError(f'{output_file} missing')
 
 
-def forcealign(work_dir, audio, txt):
-    dir = mkdtemp(dir=work_dir)
+def get_temp_file(dir, suffix):
+    with NamedTemporaryFile(dir=dir, suffix=suffix, delete=False) as f:
+        return Path(f.name)
+
+
+def forcealign(work_dir: Path, audio: str, txt: str) -> Path:
+    output = get_temp_file(work_dir, '.ctm')
     try:
-        align('ForcedAlign', os.path.join(work_dir, audio), os.path.join(work_dir, txt), dir)
+        run_tool('ForcedAlign', work_dir / audio, work_dir / txt, output, work_dir)
     except RuntimeError:
         logger.warn('Forced align failed! Retrying with Segment...')
         return segmentalign(work_dir, audio, txt)
-    return os.path.join(dir, 'output.ctm')
+    return output
 
 
-def segmentalign(work_dir, audio, txt):
-    dir = mkdtemp(dir=work_dir)
-    align('SegmentAlign', os.path.join(work_dir, audio), os.path.join(work_dir, txt), dir)
-    return os.path.join(dir, 'output.ctm')
+def segmentalign(work_dir: Path, audio: str, txt: str) -> Path:
+    output = get_temp_file(work_dir, '.ctm')
+    run_tool('SegmentAlign', work_dir / audio, work_dir / txt, output, work_dir)
+    return output
 
 
-def recognize(work_dir, audio):
-    dir = mkdtemp(dir=work_dir)
-    reco(os.path.join(work_dir, audio), dir)
-    return os.path.join(dir, 'output.txt')
+def recognize(work_dir: Path, audio: str) -> Path:
+    output = get_temp_file(work_dir, '.txt')
+    run_tool('Recognize', work_dir / audio, None, output, work_dir)
+    return output
+
+
+def diarize(work_dir: Path, audio: str) -> Path:
+    output = get_temp_file(work_dir, '.ctm')
+    run_tool('SpeakerDiarization', work_dir / audio, None, output, work_dir)
+    return output
+
+
+def vad(work_dir: Path, audio: str) -> Path:
+    output = get_temp_file(work_dir, '.ctm')
+    run_tool('SpeechActivityDetection', work_dir / audio, None, output, work_dir)
+    return output
+
+
+def kws(work_dir: Path, audio: str, keywords: str) -> Path:
+    output = get_temp_file(work_dir, '.txt')
+    run_tool('KeywordSpotting', work_dir / audio, work_dir / keywords, output, work_dir)
+    return output

@@ -1,7 +1,6 @@
-import codecs
 import json
-import os
 import shutil
+from pathlib import Path
 from tempfile import mkdtemp
 
 from bson import ObjectId
@@ -13,10 +12,10 @@ from worker.tasks.emu.segmentation import segmentation_to_emu_annot
 from worker.tasks.emu.zip import make_archive
 
 
-def get_file(db, file_id):
+def get_file(db, file_id: str, work_dir: Path) -> Path:
     input_res = db.clarin.resources.find_one({'_id': ObjectId(file_id)})
     if 'file' in input_res and input_res['file']:
-        return input_res['file']
+        return work_dir / input_res['file']
     else:
         return None
 
@@ -24,7 +23,7 @@ def get_file(db, file_id):
 feats = ['forest', 'ksvF0', 'rmsana']
 
 
-def package(work_dir, project_id, db):
+def package(work_dir: Path, project_id: str, db) -> Path:
     proj = db.clarin.emu.find_one({'_id': ObjectId(project_id)})
     if not proj:
         raise RuntimeError('project not found')
@@ -32,13 +31,13 @@ def package(work_dir, project_id, db):
     if 'deleted' in proj:
         raise RuntimeError('project deleted')
 
-    dir = mkdtemp(suffix='_emuDB', dir=work_dir)
-    proj_name = os.path.basename(dir)[:-6]
+    dir = Path(mkdtemp(suffix='_emuDB', dir=work_dir))
+    proj_name = str(dir.name)[:-6]
 
-    logger.info(u'Saving CTM in {} (zip)...'.format(dir))
+    logger.info(f'Saving CTM in {dir} (zip)...')
 
     config = get_config(proj_name, feats)
-    with codecs.open(os.path.join(dir, u'{}_DBconfig.json'.format(proj_name)), mode='w', encoding='utf-8') as f:
+    with open(dir / f'{proj_name}_DBconfig.json', 'w') as f:
         json.dump(config, f, indent=4)
 
     sessions = {}
@@ -46,8 +45,8 @@ def package(work_dir, project_id, db):
         if 'audio' not in bundle or 'seg' not in bundle:
             continue
 
-        b = {'name': bundle['name'], 'audio': os.path.join(work_dir, get_file(db, bundle['audio'])),
-             'ctm': os.path.join(work_dir, get_file(db, bundle['seg']))}
+        b = {'name': bundle['name'], 'audio': get_file(db, bundle['audio'], work_dir),
+             'ctm': get_file(db, bundle['seg'], work_dir)}
 
         if not b['audio'] or not b['ctm']:
             continue
@@ -58,19 +57,19 @@ def package(work_dir, project_id, db):
         sessions[sess].append(b)
 
     for sess, bndls in sessions.items():
-        sess_dir = os.path.join(dir, u'{}_ses'.format(sess))
-        os.mkdir(sess_dir)
+        sess_dir = dir / f'{sess}_ses'
+        sess_dir.mkdir()
         for bndl in bndls:
-            bndl_dir = os.path.join(sess_dir, u'{}_bndl'.format(bndl['name']))
-            os.mkdir(bndl_dir)
-            bndl_basnam = os.path.join(bndl_dir, bndl['name'])
-            shutil.copy(bndl['audio'], os.path.join(bndl_dir, bndl_basnam + u'.wav'))
-            # save_annot(bndl['ctm'], bndl_basnam + u'_annot.json', bndl['name'])
-            annot = segmentation_to_emu_annot(bndl['ctm'], bndl['name'])
-            with codecs.open(bndl_basnam + u'_annot.json', mode='w', encoding='utf-8') as f:
-                json.dump(annot, f, indent=4)
-            run_feat(feats, bndl_basnam + u'.wav')
+            bndl_dir = sess_dir / f'{bndl["name"]}_bndl'
+        bndl_dir.mkdir()
+        bndl_basnam = bndl_dir / bndl['name']
+        shutil.copy(bndl['audio'], bndl_basnam.with_suffix('.wav'))
+        # save_annot(bndl['ctm'], bndl_basnam + u'_annot.json', bndl['name'])
+        annot = segmentation_to_emu_annot(bndl['ctm'], bndl['name'])
+        with open(bndl_basnam.with_suffix('_annot.json'), 'w') as f:
+            json.dump(annot, f, indent=4)
+        run_feat(feats, bndl_basnam.with_suffix('.wav'))
 
-    make_archive(dir, dir + u'.zip')
+    make_archive(dir, dir.with_suffix('.zip'))
     shutil.rmtree(dir)
-    return dir + u'.zip'
+    return dir.with_suffix('.zip')

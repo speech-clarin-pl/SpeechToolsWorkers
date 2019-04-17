@@ -1,4 +1,3 @@
-import codecs
 import json
 from collections import OrderedDict
 
@@ -37,5 +36,5 @@ def save_annot(ctm_file, annot_file, name, samplerate=16000.0):
 
     annot['links'] = uttlinks + wordlinks
 
-    with codecs.open(annot_file, mode='w', encoding='utf-8') as f:
+    with open(annot_file, mode='w') as f:
         json.dump(annot, f, indent=4)

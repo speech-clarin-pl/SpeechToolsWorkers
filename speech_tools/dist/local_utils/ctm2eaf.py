@@ -1,12 +1,12 @@
 import argparse
-import codecs
 from pathlib import Path
+
 from pympi.Elan import Eaf, to_eaf
 
 
 def read_ctm(ctm_path, seg2tier, eaf):
     ret = {}
-    with codecs.open(str(ctm_path), encoding='utf-8') as f:
+    with open(ctm_path) as f:
         for l in f:
             tok = l.strip().split()
             id = tok[0]
@@ -28,23 +28,23 @@ def read_ctm(ctm_path, seg2tier, eaf):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('words_ctm')
-    parser.add_argument('seg2tier')
-    parser.add_argument('eaf_in')
-    parser.add_argument('eaf_out')
-    parser.add_argument('--phones-ctm', default=None)
+    parser.add_argument('words_ctm', type=Path)
+    parser.add_argument('seg2tier', type=Path)
+    parser.add_argument('eaf_in', type=Path)
+    parser.add_argument('eaf_out', type=Path)
+    parser.add_argument('--phones-ctm', default=None, type=Path)
 
     args = parser.parse_args()
 
-    words_ctm_path = Path(args.words_ctm)
-    seg2tier_path = Path(args.seg2tier)
-    eaf_in_path = Path(args.eaf_in)
-    eaf_out_path = Path(args.eaf_out)
+    words_ctm_path = args.words_ctm
+    seg2tier_path = args.seg2tier
+    eaf_in_path = args.eaf_in
+    eaf_out_path = args.eaf_out
 
     eaf = Eaf(str(eaf_in_path))
 
     seg2tier = {}
-    with codecs.open(str(seg2tier_path), encoding='utf-8') as f:
+    with open(seg2tier_path) as f:
         for l in f:
             tok = l.strip().split()
             seg2tier[tok[0]] = tok[1]
@@ -60,7 +60,7 @@ if __name__ == '__main__':
             eaf.add_annotation('{}_words'.format(tier), seg[0], seg[1], seg[2])
 
     if args.phones_ctm:
-        phones_ctm_path = Path(args.phones_ctm)
+        phones_ctm_path = args.phones_ctm
         tiers = read_ctm(phones_ctm_path, seg2tier, eaf)
 
         for tier in tiers.keys():

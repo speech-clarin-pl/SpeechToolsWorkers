@@ -1,12 +1,7 @@
-import os
-from subprocess import Popen, PIPE, STDOUT
+from pathlib import Path
+from subprocess import run
 
 
-def make_archive(dir, archive):
-    parent_dir = os.path.dirname(dir)
-    dir_name = os.path.basename(dir)
-    cmd = ['zip', '-r', archive, dir_name]
-    p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT, cwd=parent_dir)
-    p.stdin.close()
-    for l in p.stdout.readlines():
-        pass
+def make_archive(dir: Path, archive: Path):
+    cmd = ['zip', '-r', archive, dir.name]
+    run(cmd, cwd=dir.parent, check=True)

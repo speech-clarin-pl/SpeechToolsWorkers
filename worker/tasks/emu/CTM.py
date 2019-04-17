@@ -1,4 +1,3 @@
-import codecs
 import re
 from collections import OrderedDict
 
@@ -124,12 +123,12 @@ class CTM:
 def load_ctm(file, name):
     words = CTM(name)
     phonemes = CTM(name)
-    with codecs.open(file, encoding='utf-8') as f:
+    with open(file) as f:
         for num, line in enumerate(f):
             try:
                 seg = Segment(line.strip())
             except Exception as err:
-                raise RuntimeError(err, u'Error in {}:{} >{}<'.format(file, num, line.strip()))
+                raise RuntimeError(err, f'Error in {file}:{num} >{line.strip()}<')
             if line[0] == '@':
                 phonemes.segments.append(seg)
             else:
