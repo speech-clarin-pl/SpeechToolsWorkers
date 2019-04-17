@@ -1,0 +1,17 @@
+# This file was created by the command:
+# steps/nnet3/xconfig_to_configs.py --xconfig-file exp/segmentation_1a/tdnn_stats_asr_sad_1a4/configs/network.xconfig --config-dir exp/segmentation_1a/tdnn_stats_asr_sad_1a4/configs/
+# It contains the same content as ./xconfig but it was parsed,
+# default config values were set, 
+# and Descriptors (input=xxx) were normalized.
+# See also ./xconfig.expanded.1
+
+input name=input dim=40
+fixed-affine-layer name=lda affine-transform-file=exp/segmentation_1a/tdnn_stats_asr_sad_1a4/configs/lda.mat delay=0 dim=200 input=Append(Offset(input, -2), Offset(input, -1), input, Offset(input, 1), Offset(input, 2)) write-init-config=True
+relu-renorm-layer name=tdnn1 add-log-stddev=True bias-stddev= bottleneck-dim=-1 dim=256 dropout-per-dim=False dropout-per-dim-continuous=False dropout-proportion=0.5 input=lda l2-regularize= learning-rate-factor= max-change=0.75 ng-affine-options= ng-linear-options= self-repair-scale=1e-05 target-rms=1.0
+relu-renorm-layer name=tdnn2 add-log-stddev=True bias-stddev= bottleneck-dim=-1 dim=256 dropout-per-dim=False dropout-per-dim-continuous=False dropout-proportion=0.5 input=Append(Offset(tdnn1, -1), tdnn1, Offset(tdnn1, 1), Offset(tdnn1, 2)) l2-regularize= learning-rate-factor= max-change=0.75 ng-affine-options= ng-linear-options= self-repair-scale=1e-05 target-rms=1.0
+relu-renorm-layer name=tdnn3 add-log-stddev=True bias-stddev= bottleneck-dim=-1 dim=256 dropout-per-dim=False dropout-per-dim-continuous=False dropout-proportion=0.5 input=Append(Offset(tdnn2, -3), tdnn2, Offset(tdnn2, 3), Offset(tdnn2, 6)) l2-regularize= learning-rate-factor= max-change=0.75 ng-affine-options= ng-linear-options= self-repair-scale=1e-05 target-rms=1.0
+stats-layer name=tdnn3_stats config=mean+count(-99:3:9:99) dim=257 input=tdnn3
+relu-renorm-layer name=tdnn4 add-log-stddev=True bias-stddev= bottleneck-dim=-1 dim=256 dropout-per-dim=False dropout-per-dim-continuous=False dropout-proportion=0.5 input=Append(Offset(tdnn3, -6), tdnn3, Offset(tdnn3, 6), Offset(tdnn3, 12), tdnn3_stats) l2-regularize= learning-rate-factor= max-change=0.75 ng-affine-options= ng-linear-options= self-repair-scale=1e-05 target-rms=1.0
+stats-layer name=tdnn4_stats config=mean+count(-108:6:18:108) dim=257 input=tdnn4
+relu-renorm-layer name=tdnn5 add-log-stddev=False bias-stddev= bottleneck-dim=-1 dim=256 dropout-per-dim=False dropout-per-dim-continuous=False dropout-proportion=0.5 input=Append(Offset(tdnn4, -12), tdnn4, Offset(tdnn4, 12), Offset(tdnn4, 24), tdnn4_stats) l2-regularize= learning-rate-factor= max-change=0.75 ng-affine-options= ng-linear-options= self-repair-scale=1e-05 target-rms=1.0
+output-layer name=output bias-stddev=0.0 bottleneck-dim=-1 dim=3 include-log-softmax=True input=tdnn5 l2-regularize=0.0 learning-rate-factor=0.1 max-change=1.5 ng-affine-options= ng-linear-options= objective-type=linear orthonormal-constraint=1.0 output-delay=0 param-stddev=0.0
