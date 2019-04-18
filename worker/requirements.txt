@@ -3,4 +3,4 @@ Flask
 Flask-PyMongo
 pymongo
 Pyphen
-python3-pika
+pika

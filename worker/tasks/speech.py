@@ -21,8 +21,8 @@ def run_tool(tool_name: str, wav_file: Path, aux_file: Path, output_file: Path, 
             run(cmd, stdout=log, stderr=STDOUT, check=True, cwd=speech_tools_path)
         except CalledProcessError:
             raise RuntimeError(f'error running script for {output_file}')
-        finally:
-            rmtree(str(tmp_dir))
+        # finally:
+        #     rmtree(str(tmp_dir))
 
     if not output_file.exists():
         raise RuntimeError(f'{output_file} missing')
