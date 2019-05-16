@@ -10,6 +10,9 @@ nj=1
 nj_xvector=1
 threshold=0
 
+num_spk=unknown
+cluster_num_spk_option=''
+
 echo "$0 $@"  # Print the command line for logging
 . parse_options.sh || exit 1;
 
@@ -17,6 +20,7 @@ if [ $# -ne 2 ]; then
   echo "Usage: ./run.sh <input-wav> <out-ctm>"
   echo ""
   echo "Options:"
+  echo "    --num_spk"
   exit 1
 fi
 
@@ -49,7 +53,10 @@ echo input $tmp_wav_file > ${tmp_path}/data/wav.scp
 echo "input n/a" > ${tmp_path}/data/text
 echo input spk > ${tmp_path}/data/utt2spk
 echo spk input > ${tmp_path}/data/spk2utt
-
+if [ "$num_spk" != "unknown" ] ; then
+	echo "spk ${num_spk}" > ${tmp_path}/data/reco2num_spk
+  cluster_num_spk_option="--reco2num-spk data/reco2num_spk"
+fi
 
 cd ${tmp_path}
 
@@ -83,7 +90,7 @@ ln -s $KALDI_ROOT/egs/callhome_diarization/v2/local
 #TODO check callhome1 vs callhome2
 ./diarization/nnet3/xvector/score_plda.sh --nj $nj_xvector model/xvectors_callhome2 xvectors plda_scores
 
-./diarization/cluster.sh --nj $nj --threshold $threshold plda_scores plda_cluster
+./diarization/cluster.sh --nj $nj --threshold $threshold $cluster_num_spk_option plda_scores plda_cluster
 
 awk '{printf "%s %s %0.3f %0.3f %s\n",$2,$3,$4,$5,$8}' < plda_cluster/rttm > $out
 
