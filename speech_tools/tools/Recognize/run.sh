@@ -22,7 +22,7 @@ fi
 #if file is an existing global path
 if [ -f "$1" ] ; then
     wav_file=$(readlink -f $1)
-    out=$(readlink -f $2)z
+    out=$(readlink -f $2)
 else
     #else it's within the $data_path
     wav_file=$data_path/$1

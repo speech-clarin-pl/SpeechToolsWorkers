@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  worker:
+    volumes:
+      - ../test/work:/work
+    environment:
+      - DB_HOST=db
+      - TOOLS=/
+    image: "danijel3/clarin-pl-worker"
+  db:
+    image: "mongo"
+    ports:
+      - "27017:27017"

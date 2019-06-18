@@ -1,6 +1,3 @@
 daemonize
-Flask
-Flask-PyMongo
 pymongo
 Pyphen
-pika
