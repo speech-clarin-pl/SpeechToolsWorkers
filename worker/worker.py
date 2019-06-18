@@ -12,9 +12,9 @@ def run():
         from pymongo import MongoClient
 
         db = MongoClient(host=db_host)
-        if 'tasks' not in db.workers.list_collection_names():
-            db.workers.create_collection('tasks', capped=True, max=max_task_history,
-                                         size=max_task_history * ave_task_size)
+        # if 'tasks' not in db.workers.list_collection_names():
+        #     db.workers.create_collection('tasks', capped=True, max=max_task_history,
+        #                                  size=max_task_history * ave_task_size)
 
         logger.info('Worker queue waiting...')
 

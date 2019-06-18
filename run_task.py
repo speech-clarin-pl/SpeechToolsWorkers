@@ -47,4 +47,7 @@ if __name__ == '__main__':
 
     print('Task done!')
 
-    print(f'Result: {t["result"]}')
+    if 'result' in t:
+        print(f'Result: {t["result"]}')
+    else:
+        print(f'Result: {t["error"]}')
