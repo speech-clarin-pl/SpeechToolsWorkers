@@ -27,7 +27,7 @@ if __name__ == '__main__':
     elif task_type == 'kws':
         task['input'] = {}
         task['input']['audio'] = task_inputs[0]
-        task['input']['keywords'] = task_inputs[0]
+        task['input']['keywords'] = task_inputs[1]
     else:
         raise RuntimeError(f'Unknown task {task_type}!')
 
