@@ -21,9 +21,11 @@ if __name__ == '__main__':
     if task_type == 'text_normalize' or task_type == 'ffmpeg' or task_type == 'recognize' or task_type == 'diarize' or task_type == 'vad':
         task['input'] = task_inputs[0]
     elif task_type == 'forcealign' or task_type == 'segmentalign':
+        task['input']={}
         task['input']['audio'] = task_inputs[0]
         task['input']['text'] = task_inputs[1]
     elif task_type == 'kws':
+        task['input'] = {}
         task['input']['audio'] = task_inputs[0]
         task['input']['keywords'] = task_inputs[0]
     else:
