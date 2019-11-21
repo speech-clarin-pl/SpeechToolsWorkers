@@ -94,12 +94,12 @@ deldata=$5
 
 oov=$(cat $lang/oov.int)
 
-python local_utils/get_text_from_segments.py $cleanup/text $cleanup/segments /dev/stdout | \
+python3 local_utils/get_text_from_segments.py $cleanup/text $cleanup/segments /dev/stdout | \
 align-text ark:- ark:$data/text ark,t:- | \
 steps/cleanup/internal/get_ctm_edits.py --oov=$oov --symbol-table=$lang/words.txt \
 	/dev/stdin $ctm_clean $cleanup/ctm_edits_del
 
-python local_utils/extract_deleted.py $cleanup/ctm_edits_del $cleanup/text.del $cleanup/segments.del
+python3 local_utils/extract_deleted.py $cleanup/ctm_edits_del $cleanup/text.del $cleanup/segments.del
 
 sort -o $cleanup/text.del $cleanup/text.del
 sort -o $cleanup/segments.del $cleanup/segments.del

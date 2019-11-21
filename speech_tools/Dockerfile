@@ -1,18 +1,19 @@
-FROM danijel3/kaldi
-MAINTAINER Danijel Koržinek <danijel@pja.edu.pl>
-
-RUN ln -s /usr/bin/python3 /usr/bin/python
-
-COPY parse_options.sh /parse_options.sh
-
-RUN python -m pip install textgrid pympi-ling
+FROM kaldiasr/kaldi 
 
 RUN apt-get update && \
-    apt-get install -y bc && \
+    apt-get install -y bc python3 python2.7 python3-pip python-dev && \
     apt-get clean && apt-get autoclean && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install textgrid pympi-ling
+
+RUN cd /opt/kaldi/tools && ./extras/install_phonetisaurus.sh
 
 COPY dist /dist
 
 COPY tools /tools
+
+COPY parse_options.sh /tools
+
+WORKDIR /tools
 
 ENTRYPOINT ["/bin/bash","-c"]

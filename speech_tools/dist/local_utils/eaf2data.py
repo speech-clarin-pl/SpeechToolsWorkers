@@ -58,22 +58,22 @@ if __name__ == '__main__':
             if spk_tier:
                 spk = t + '_'
             else:
-                spk = f'spk{num:02d}'
+                spk = 'spk{:02d}'.format(num)
                 num += 1
             segments.append(Segment(id, start, end, text, spk, t))
 
     with open(str(data_path / 'text'), mode='w') as f:
         for seg in segments:
-            f.write(f'{seg.spk}_{seg.id} {seg.text}\n')
+            f.write('{}_{} {}\n'.format(seg.spk,seg.id,seg.text))
 
     with open(str(data_path / 'segments'), mode='w') as f:
         for seg in segments:
-            f.write(f'{seg.spk}_{seg.id} input {seg.start} {seg.end}\n')
+            f.write('{}_{} input {} {}\n'.format(seg.spk,seg.id,seg.start,seg.end))
 
     with open(str(data_path / 'utt2spk'), mode='w') as f:
         for seg in segments:
-            f.write(f'{seg.spk}_{seg.id} {seg.spk}\n')
+            f.write('{}_{} {}\n'.format(seg.spk,seg.id,seg.spk))
 
     with open(str(data_path / 'seg2tier'), mode='w') as f:
         for seg in segments:
-            f.write(f'{seg.id} {seg.tier}\n')
+            f.write('{} {}\n'.format(seg.id,seg.tier))

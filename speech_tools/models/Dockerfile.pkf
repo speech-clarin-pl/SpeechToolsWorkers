@@ -1,0 +1,5 @@
+FROM danijel3/clarin-pl-speechtools
+
+COPY --from=danijel3/clarin-pl/speechmodels:pkf /model /dist/model/default
+
+ENTRYPOINT ["/bin/bash","-c"]

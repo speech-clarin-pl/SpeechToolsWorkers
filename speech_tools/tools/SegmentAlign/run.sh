@@ -92,9 +92,9 @@ echo "input input 1" > cleaned_ad/reco2file_and_channel
 ./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} cleaned_ad lang adapted ali_ad
 #make CTM in the ali folder
 ./steps/get_train_ctm.sh cleaned_ad lang ali_ad
-python local_utils/fix_ctm.py ali_ad/ctm ali_ad/ctm.fixed
+python3 local_utils/fix_ctm.py ali_ad/ctm ali_ad/ctm.fixed
 ./local_utils/get_phoneme_ctm.sh cleaned_ad lang ali_ad
-python local_utils/fix_ctm.py ali_ad/phonectm ali_ad/phonectm.fixed
+python3 local_utils/fix_ctm.py ali_ad/phonectm ali_ad/phonectm.fixed
 #get missing segments
 sort -k3n ali_ad/ctm -o ali_ad/ctm.sorted
 ./local_utils/get_deleted_seg.sh cleanup_ad lang data ali_ad/ctm.sorted deleted || true
@@ -103,14 +103,14 @@ if [ -s deleted/segments ] ; then #if there are any missing segments
 	./steps/align_fmllr.sh --nj 1 --beam ${beam} --retry-beam ${retry_beam} deleted lang adapted ali_deleted
 	echo "input input 1" > deleted/reco2file_and_channel
 	./steps/get_train_ctm.sh deleted lang ali_deleted
-	python local_utils/fix_ctm.py ali_deleted/ctm ali_deleted/ctm.fixed
+	python3 local_utils/fix_ctm.py ali_deleted/ctm ali_deleted/ctm.fixed
 	./local_utils/get_phoneme_ctm.sh deleted lang ali_deleted
 	python local_utils/fix_ctm.py ali_deleted/phonectm ali_deleted/phonectm.fixed
 	#merge CTMs
 	cat ali_ad/ctm.fixed ali_deleted/ctm.fixed > ctm.combined
-	python local_utils/fix_ctm.py ctm.combined  words.ctm
+	python3 local_utils/fix_ctm.py ctm.combined  words.ctm
 	cat ali_ad/phonectm.fixed ali_deleted/phonectm.fixed > phonectm.combined
-	python local_utils/fix_ctm.py phonectm.combined phonemes.ctm
+	python3 local_utils/fix_ctm.py phonectm.combined phonemes.ctm
 else
 	cp ali_ad/ctm.fixed words.ctm
 	cp ali_ad/phonectm.fixed phonemes.ctm

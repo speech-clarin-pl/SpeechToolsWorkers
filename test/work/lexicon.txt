@@ -1,0 +1,3 @@
+jest	j e s t
+pacjent	p a ts j e n t
+państwo	p a ni s t f o

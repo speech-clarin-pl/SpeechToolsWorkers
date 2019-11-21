@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     segments = []
 
-    with open(args.ctm) as f:
+    with open(args.ctm,encoding='utf-8') as f:
         for line in f:
             segments.append(Segment(line))
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     seg_id = 1
     file_id = ''
 
-    with open(args.text, 'w') as tf, open(args.segments, 'w') as sf:
+    with open(args.text, mode='w', encoding='utf-8') as tf, open(args.segments, 'w') as sf:
         for seg in segments:
             if seg.op == 'del' or seg.op == 'sub':
                 seg_text = seg_text + ' ' + seg.ref
@@ -47,8 +47,8 @@ if __name__ == '__main__':
                 if seg.start == seg_start:
                     continue
                 if len(seg_text) > 0:
-                    tf.write(f'{file_id}-{seg_id}{seg_text}\n')
+                    tf.write('{}-{}{}\n'.format(file_id,seg_id,seg_text))
                     seg_text = ''
-                    sf.write(f'{file_id}-{seg_id} {file_id} {seg_start} {seg.start}\n')
+                    sf.write('{}-{} {} {} {}\n'.format(file_id,seg_id,file_id,seg_start,seg.start))
                     seg_start = 0
                     seg_id += 1

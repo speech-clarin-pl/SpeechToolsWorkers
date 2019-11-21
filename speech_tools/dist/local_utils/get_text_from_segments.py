@@ -4,7 +4,7 @@ import argparse
 class Segment:
     def __init__(self, time_line):
         tok = time_line.split(' ')
-        assert len(tok) == 4, f'segments file line has to have 4 tokens: {time_line}'
+        assert(len(tok) == 4), 'segments file line has to have 4 tokens: {}'.format(time_line)
 
         self.file = tok[1]
         self.segment = tok[0]
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     with open(args.seg_text) as f:
         for line in f:
             pos = line.find(' ')
-            assert pos > 0, f'cannot parse text line: {line}'
+            assert(pos > 0),'cannot parse text line: {}'.format(line)
             seg_id = line[:pos]
             seg = segments[seg_id]
             seg.text = line[pos + 1:].strip()
@@ -48,4 +48,4 @@ if __name__ == '__main__':
             text = segments[0].text
             for seg in segments[1:]:
                 text += ' ' + seg.text
-            f.write(f'{segments[0].file} {text}\n')
+            f.write('{} {}\n'.format(segments[0].file,text))

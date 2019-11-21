@@ -1,0 +1,16 @@
+FROM debian:9.8 
+MAINTAINER Danijel Koržinek <danijel@pja.edu.pl>
+
+RUN apt-get update && \
+    apt-get install -y bc python3 python2.7 python3-pip && \
+    apt-get clean && apt-get autoclean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=kaldiasr/kaldi:latest /opt/kaldi/egs/wsj/s5 /wsj
+
+RUN pip3 install textgrid pympi-ling
+
+COPY dist /dist
+
+COPY tools /tools
+
+ENTRYPOINT ["/bin/bash","-c"]

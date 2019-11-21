@@ -8,7 +8,7 @@ def convert_ctm_to_textgrid(ctms, textgrid):
     for ctm in ctms:
         tiername = ctm.stem
         ret = []
-        with open(ctm) as f:
+        with open(ctm,encoding='utf-8') as f:
             for l in f:
                 tok = l.strip().split()
                 word = tok[4]
