@@ -26,7 +26,7 @@ ln -s $dist_path/path.sh path.sh
 
 . path.sh
 
-export LD_LIBRARY_PATH=$KALDI_ROOT/tools/openfst/lib
+export LD_LIBRARY_PATH=$KALDI_ROOT/tools/openfst/lib:/usr/local/lib
 
 python2.7 $KALDI_ROOT/tools/phonetisaurus-g2p/src/scripts/phonetisaurus-train --lexicon $lexicon --seq2_del
 
