@@ -70,3 +70,9 @@ To perform G2P on a wordlist, we have a small script:
 ```
 docker run -it --rm -v $data_dir:/data danijel3/clarin-pl-speechtools:studio "/tools/misc/transcribe_word_list.sh wordlist lexicon"
 ```
+
+You can retrain a G2P model using the following command (the new model can be used in the above command by overriding the `--model-path` switch):
+
+```
+docker run -it --rm -v $data_dir:/data danijel3/clarin-pl-speechtools "/tools/misc/train_g2p.sh lexicon model.fst"
+```
