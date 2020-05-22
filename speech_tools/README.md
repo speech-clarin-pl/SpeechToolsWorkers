@@ -76,3 +76,9 @@ You can retrain a G2P model using the following command (the new model can be us
 ```
 docker run -it --rm -v $data_dir:/data danijel3/clarin-pl-speechtools "/tools/misc/train_g2p.sh lexicon model.fst"
 ```
+
+You can retrain the acoustic model using the following command:
+
+```
+docker run -it --rm -v $data_dir:/data danijel3/clarin-pl-speechtools "/tools/misc/train_am.sh corpus_dir model_out"
+```
