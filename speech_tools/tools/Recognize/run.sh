@@ -8,8 +8,8 @@ data_path=/data
 
 model_name=default
 
-echo "$0 $@"  # Print the command line for logging
-. parse_options.sh || exit 1;
+echo "$0 $@" # Print the command line for logging
+. parse_options.sh || exit 1
 
 if [ $# -ne 2 ]; then
   echo "Usage: ./run.sh <input-wav> <out-txt>"
@@ -20,33 +20,36 @@ if [ $# -ne 2 ]; then
 fi
 
 #if file is an existing global path
-if [ -f "$1" ] ; then
-    wav_file=$(readlink -f $1)
-    out=$(readlink -f $2)
+if [ -f "$1" ]; then
+  audio_file=$(readlink -f $1)
+  out=$(readlink -f $2)
 else
-    #else it's within the $data_path
-    wav_file=$data_path/$1
-    out=$data_path/$2
+  #else it's within the $data_path
+  audio_file=$data_path/$1
+  out=$data_path/$2
 fi
 
-for f in $wav_file; do
-  [ ! -f "$f" ] && echo "no such file $f" && exit 1;
+for f in $audio_file; do
+  [ ! -f "$f" ] && echo "no such file $f" && exit 1
 done
 
-[ ! -d "${dist_path}/model/${model_name}" ] &&  echo "need to get the proper model: ${model_name}" && exit 1;
+[ ! -d "${dist_path}/model/${model_name}" ] && echo "need to get the proper model: ${model_name}" && exit 1
 
-
-if [ -e "$tmp_path" ] ; then
-	rm -rf ${tmp_path}
+if [ -e "$tmp_path" ]; then
+  rm -rf ${tmp_path}
 fi
 
 mkdir -p ${tmp_path}
 mkdir ${tmp_path}/data
 
-echo input $wav_file > ${tmp_path}/data/wav.scp
-echo input unknown > ${tmp_path}/data/text
-echo input spk > ${tmp_path}/data/utt2spk
-echo spk input > ${tmp_path}/data/spk2utt
+wav_file=${tmp_path}/data/input.wav
+
+ffmpeg -y -i $audio_file -acodec pcm_s16le -ac 1 -ar 16k $wav_file
+
+echo input $wav_file >${tmp_path}/data/wav.scp
+echo input unknown >${tmp_path}/data/text
+echo input spk >${tmp_path}/data/utt2spk
+echo spk input >${tmp_path}/data/spk2utt
 
 cd ${tmp_path}
 
@@ -58,7 +61,7 @@ ln -s ${dist_path}/model/${model_name}/lang_carpa
 ln -s ${dist_path}/model/${model_name}/lang_test
 
 mkdir tdnn
-for f in ${dist_path}/model/${model_name}/chain/tdnn/* ; do ln -s $(readlink -f $f) tdnn/$(basename $f) ; done
+for f in ${dist_path}/model/${model_name}/chain/tdnn/*; do ln -s $(readlink -f $f) tdnn/$(basename $f); done
 
 . path.sh
 
@@ -73,7 +76,7 @@ ln -s $KALDI_ROOT/egs/wsj/s5/local
 ./steps/nnet3/decode.sh --acwt 1.0 --post-decode-acwt 10.0 --frames-per-chunk 140 --nj 1 --num-threads 4 --online-ivector-dir ivectors --skip-scoring true tree/graph data tdnn/decode
 ./steps/lmrescore_const_arpa.sh --skip-scoring true lang_test lang_carpa data tdnn/decode tdnn/decode_rs
 
-lattice-best-path --lm-scale=12 "ark:gunzip -c tdnn/decode_rs/lat.*.gz|" ark,t:- | ./utils/int2sym.pl -f 2- tree/graph/words.txt | cut -f2- -d' '  > $out
+lattice-best-path --lm-scale=12 "ark:gunzip -c tdnn/decode_rs/lat.*.gz|" ark,t:- | ./utils/int2sym.pl -f 2- tree/graph/words.txt | cut -f2- -d' ' >$out
 
 echo Finished recognizing...
 
