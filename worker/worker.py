@@ -3,7 +3,7 @@ from time import sleep
 from bson import ObjectId
 from pymongo import ASCENDING
 
-from worker.config import logger, db_host, max_task_history, ave_task_size
+from worker.config import logger, db_host, max_task_history, ave_task_size, db_name
 from worker.tasks import tasks_map
 
 
@@ -11,9 +11,9 @@ def run():
     while True:
         from pymongo import MongoClient
 
-        db = MongoClient(host=db_host)
+        db = MongoClient(host=db_host)[db_name]
         # if 'tasks' not in db.workers.list_collection_names():
-        #     db.workers.create_collection('tasks', capped=True, max=max_task_history,
+        #     db.create_collection('tasks', capped=True, max=max_task_history,
         #                                  size=max_task_history * ave_task_size)
 
         logger.info('Worker queue waiting...')
@@ -22,9 +22,9 @@ def run():
 
             sleep(1)
 
-            task_data = db.workers.tasks.find_one_and_update(filter={'$and': [{'in_progress': False}, {'done': False}]},
-                                                            update={'$set': {'in_progress': True}},
-                                                            sort=[('time', ASCENDING)])
+            task_data = db.tasks.find_one_and_update(filter={'$and': [{'in_progress': False}, {'done': False}]},
+                                                             update={'$set': {'in_progress': True}},
+                                                             sort=[('time', ASCENDING)])
 
             if not task_data:
                 continue
@@ -44,4 +44,4 @@ def run():
                 logger.error(f'Unknown task: {task_type}')
                 set['error'] = f'Unknown task: {task_type}'
 
-            db.workers.tasks.update_one({'_id': ObjectId(task_data['_id'])}, {'$set': set})
+            db.tasks.update_one({'_id': ObjectId(task_data['_id'])}, {'$set': set})

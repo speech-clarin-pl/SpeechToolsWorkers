@@ -1,4 +1,7 @@
 all: main
 
 main:
-	docker build -t danijel3/clarin-pl-worker -f Dockerfile .
+	docker build -t speechclarinpl/website-worker -f Dockerfile .
+
+push:
+	docker push speechclarinpl/website-worker
