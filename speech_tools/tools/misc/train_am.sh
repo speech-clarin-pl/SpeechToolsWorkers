@@ -44,6 +44,29 @@ fi
 mkdir -p ${tmp_path}
 mkdir ${tmp_path}/data
 
+if [ -f $corpus ]; then
+  newcorp=$(mktemp -d)
+  pushd $newcorp
+  case $corpus in
+  *.tar.bz2) tar xjf $corpus ;;
+  *.tar.gz) tar xzf $corpus ;;
+  *.bz2) bunzip2 $corpus ;;
+  *.gz) gunzip $corpus ;;
+  *.tar) tar xf $corpus ;;
+  *.tbz2) tar xjf $corpus ;;
+  *.tgz) tar xzf $corpus ;;
+  *.zip) unzip $corpus ;;
+  *.Z) uncompress $corpus ;;
+#  *.rar) rar x $corpus ;;
+  *)
+    echo "'$corpus' cannot be extracted"
+    exit 0
+    ;;
+  esac
+  popd
+  corpus=$newcorp
+fi
+
 for wav_file in $corpus/*.wav; do
   wav_id=$(basename "$wav_file" .wav)
 
