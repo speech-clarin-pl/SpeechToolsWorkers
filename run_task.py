@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     task = {'task': task_type, 'in_progress': False, 'done': False, 'time': datetime.utcnow()}
 
-    if task_type == 'text_normalize' or task_type == 'ffmpeg' or task_type == 'recognize' or task_type == 'diarize' or task_type == 'vad':
+    if task_type == 'text_normalize' or task_type == 'ffmpeg' or task_type == 'recognize' or task_type == 'diarize' or task_type == 'vad' or task_type == 'g2p':
         task['input'] = task_inputs[0]
     elif task_type == 'forcealign' or task_type == 'segmentalign':
         task['input'] = {}

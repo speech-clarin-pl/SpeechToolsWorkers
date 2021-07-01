@@ -1,6 +1,4 @@
-all: main
-
-main:
+build:
 	docker build -t speechclarinpl/website-worker -f Dockerfile .
 
 push:

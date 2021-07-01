@@ -1,5 +1,5 @@
-FROM danijel3/clarin-pl-speechtools
+FROM clarinpl/speech-tools
 
-COPY --from=danijel3/clarin-pl-speechmodels:studio /dist/model/studio /dist/model/default
+COPY --from=clarinpl/speech-models:studio /models/studio /dist/model/default
 
 ENTRYPOINT ["/bin/bash","-c"]
