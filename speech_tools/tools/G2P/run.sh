@@ -25,7 +25,7 @@ else
   lexicon=$data_path/$2
 fi
 
-ln -s $dist_path/path.sh .
+ln -sf $dist_path/path.sh .
 
 . path.sh
 
